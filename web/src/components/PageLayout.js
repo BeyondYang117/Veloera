@@ -64,7 +64,19 @@ const PageLayout = () => {
 
     // 默认显示侧边栏
     styleDispatch({ type: 'SET_SIDER', payload: true });
-  }, [i18n]);
+
+    // 监听用户登出事件
+    const handleUserLoggedOut = () => {
+      userDispatch({ type: 'logout' });
+    };
+
+    window.addEventListener('userLoggedOut', handleUserLoggedOut);
+
+    // 清理事件监听器
+    return () => {
+      window.removeEventListener('userLoggedOut', handleUserLoggedOut);
+    };
+  }, [i18n, userDispatch]);
 
   // 获取侧边栏折叠状态
   const isSidebarCollapsed =

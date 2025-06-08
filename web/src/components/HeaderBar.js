@@ -248,46 +248,7 @@ const HeaderBar = () => {
                 docs: '/docs',
               };
               return (
-                <div
-                  onClick={(e) => {
-                    // 特殊处理：控制台按钮
-                    if (props.itemKey === 'detail') {
-                      if (userState.user) {
-                        // 登录状态：始终显示侧边栏
-                        styleDispatch({
-                          type: 'SET_INNER_PADDING',
-                          payload: true,
-                        });
-                        styleDispatch({ type: 'SET_SIDER', payload: true });
-                      } else {
-                        // 未登录状态：直接跳转到登录页面
-                        e.preventDefault();
-                        startTransition(() => {
-                          navigate('/login');
-                        });
-                        return;
-                      }
-                    }
-                    // 特殊处理：首页、登录、注册、定价、文档、联系我们页面需要隐藏侧边栏
-                    else if (['home', 'login', 'register', 'pricing', 'docs', 'contact'].includes(props.itemKey)) {
-                      styleDispatch({
-                        type: 'SET_INNER_PADDING',
-                        payload: false,
-                      });
-                      styleDispatch({ type: 'SET_SIDER', payload: false });
-                    }
-                    // 其他页面保持现有逻辑
-                    else {
-                      styleDispatch({
-                        type: 'SET_INNER_PADDING',
-                        payload: true,
-                      });
-                      if (!styleState.isMobile) {
-                        styleDispatch({ type: 'SET_SIDER', payload: true });
-                      }
-                    }
-                  }}
-                >
+                <div>
                   {props.isExternal ? (
                     <a
                       className='header-bar-text'
@@ -305,6 +266,47 @@ const HeaderBar = () => {
                       to={routerMap[props.itemKey]}
                       onClick={(e) => {
                         e.preventDefault();
+
+                        // 特殊处理：控制台按钮
+                        if (props.itemKey === 'detail') {
+                          if (userState.user) {
+                            // 登录状态：导航并显示侧边栏
+                            styleDispatch({
+                              type: 'SET_INNER_PADDING',
+                              payload: true,
+                            });
+                            styleDispatch({ type: 'SET_SIDER', payload: true });
+                            startTransition(() => {
+                              navigate(routerMap[props.itemKey]);
+                            });
+                          } else {
+                            // 未登录状态：直接跳转到登录页面
+                            startTransition(() => {
+                              navigate('/login');
+                            });
+                          }
+                          return;
+                        }
+
+                        // 特殊处理：首页、登录、注册、定价、文档、联系我们页面需要隐藏侧边栏
+                        if (['home', 'login', 'register', 'pricing', 'docs', 'contact'].includes(props.itemKey)) {
+                          styleDispatch({
+                            type: 'SET_INNER_PADDING',
+                            payload: false,
+                          });
+                          styleDispatch({ type: 'SET_SIDER', payload: false });
+                        }
+                        // 其他页面保持现有逻辑
+                        else {
+                          styleDispatch({
+                            type: 'SET_INNER_PADDING',
+                            payload: true,
+                          });
+                          if (!styleState.isMobile) {
+                            styleDispatch({ type: 'SET_SIDER', payload: true });
+                          }
+                        }
+
                         startTransition(() => {
                           navigate(routerMap[props.itemKey]);
                         });

@@ -132,9 +132,11 @@ const SiderBar = () => {
       'playground',
       'personal',
     ];
-    // 添加聊天项的keys
-    for (let i = 0; i < chatItems.length; i++) {
-      keys.push('chat' + i);
+    // 添加聊天项的keys，确保chatItems不为null
+    if (chatItems && Array.isArray(chatItems)) {
+      for (let i = 0; i < chatItems.length; i++) {
+        keys.push('chat' + i);
+      }
     }
     return keys;
   }, [chatItems]);
@@ -443,7 +445,7 @@ const SiderBar = () => {
         }}
       >
         {/* Chat Section - Only show if there are chat items */}
-        {chatMenuItems.map((item) => {
+        {chatMenuItems && chatMenuItems.map((item) => {
           if (item.items && item.items.length > 0) {
             return (
               <Nav.Sub
@@ -454,7 +456,7 @@ const SiderBar = () => {
                   style: iconStyles[item.itemKey],
                 })}
               >
-                {item.items.map((subItem) => (
+                {item.items && item.items.map((subItem) => (
                   <Nav.Item
                     key={subItem.itemKey}
                     itemKey={subItem.itemKey}
@@ -482,7 +484,7 @@ const SiderBar = () => {
 
         {/* Workspace Section */}
         {!isCollapsed && <Text style={groupLabelStyle}>{t('控制台')}</Text>}
-        {workspaceItems.map((item) => (
+        {workspaceItems && workspaceItems.map((item) => (
           <Nav.Item
             key={item.itemKey}
             itemKey={item.itemKey}
@@ -501,7 +503,7 @@ const SiderBar = () => {
 
             {/* Admin Section */}
             {!isCollapsed && <Text style={groupLabelStyle}>{t('管理员')}</Text>}
-            {adminItems.map((item) => (
+            {adminItems && adminItems.map((item) => (
               <Nav.Item
                 key={item.itemKey}
                 itemKey={item.itemKey}
@@ -520,7 +522,7 @@ const SiderBar = () => {
 
         {/* Finance Management Section */}
         {!isCollapsed && <Text style={groupLabelStyle}>{t('个人中心')}</Text>}
-        {financeItems.map((item) => (
+        {financeItems && financeItems.map((item) => (
           <Nav.Item
             key={item.itemKey}
             itemKey={item.itemKey}

@@ -67,22 +67,21 @@ export const StyleProvider = ({ children }) => {
   useEffect(() => {
     // 不需要显示侧边栏的路径
     const noSiderPaths = ['/', '/login', '/register', '/reset', '/oauth', '/setup', '/contact', '/docs'];
-    
+
     // 检查当前路径是否在noSiderPaths中
     const shouldHideSider = noSiderPaths.some(path => pathname.startsWith(path));
-    
+
     if (shouldHideSider) {
       dispatch({ type: 'SET_SIDER', payload: false });
-    } else {
-      // 如果不是移动设备，则显示侧边栏
-      dispatch({ type: 'SET_SIDER', payload: !state.isMobile || pathname === '/chat' });
     }
-    
+    // 对于非特殊路径，不在这里强制设置侧边栏状态
+    // 让用户的操作（如控制台按钮点击）来控制侧边栏显示
+
     // 设置内边距状态
     const noPaddingPaths = ['/chat'];
     const shouldHavePadding = !noPaddingPaths.some(path => pathname.startsWith(path));
     dispatch({ type: 'SET_INNER_PADDING', payload: shouldHavePadding });
-    
+
   }, [pathname, state.isMobile]);
 
   return (

@@ -89,12 +89,23 @@ if (isMobile()) {
   // showNoticeOptions.transition = 'flip';
 }
 
+// 清除用户登录状态的函数
+export function clearUserState() {
+  // 清除localStorage中的用户信息
+  localStorage.removeItem('user');
+
+  // 触发自定义事件，通知其他组件用户状态已清除
+  window.dispatchEvent(new CustomEvent('userLoggedOut'));
+}
+
 export function showError(error) {
   console.error(error);
   if (error.message) {
     if (error.name === 'AxiosError') {
       switch (error.response.status) {
         case 401:
+          // 清除用户状态
+          clearUserState();
           // toast.error('错误：未登录或登录已过期，请重新登录！', showErrorOptions);
           window.location.href = '/login?expired=true';
           break;
