@@ -23,17 +23,20 @@ import {
   Icon,
   Layout,
   Modal,
+  Banner,
+  Typography,
+  Toast,
 } from '@douyinfe/semi-ui';
 import Title from '@douyinfe/semi-ui/lib/es/typography/title';
 import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 import TelegramLoginButton from 'react-telegram-login';
+import { useTranslation } from 'react-i18next';
 
 import { IconGithubLogo, IconAlarm } from '@douyinfe/semi-icons';
 import OIDCIcon from './OIDCIcon.js';
 import WeChatIcon from './WeChatIcon';
 import { setUserData } from '../helpers/data.js';
 import LinuxDoIcon from './LinuxDoIcon.js';
-import { useTranslation } from 'react-i18next';
 
 const LoginForm = () => {
   const [inputs, setInputs] = useState({
@@ -173,211 +176,187 @@ const LoginForm = () => {
     }
   };
 
+  const clearCache = () => {
+    localStorage.removeItem('system_name');
+    localStorage.removeItem('status');
+    Toast.success('缓存已清理，刷新页面中...');
+    setTimeout(() => window.location.reload(), 1000);
+  };
+
   return (
-    <div>
-      <Layout>
-        <Layout.Header></Layout.Header>
-        <Layout.Content>
+    <div style={{ width: '100%', maxWidth: '400px', margin: '0 auto', padding: '20px' }}>
+      {status.error && (
+        <Banner type="danger" description={status.error} style={{ marginBottom: 20 }} />
+      )}
+      <Form onSubmit={handleSubmit}>
+        <Form.Input field="username" label="用户名" placeholder="请输入用户名" required />
+        <Form.Input
+          field="password"
+          label="密码"
+          placeholder="请输入密码"
+          mode="password"
+          required
+        />
+        <div style={{ marginTop: 12, display: 'flex', alignItems: 'center' }}>
+          <Button htmlType="submit" loading={submitted} type="primary" style={{ width: '100%' }}>
+            登录
+          </Button>
+        </div>
+        <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between' }}>
+          <Typography.Text link>忘记密码?</Typography.Text>
+          <a 
+            style={{
+              color: 'var(--semi-color-primary)',
+              marginLeft: '10px',
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
+            onClick={clearCache}
+          >
+            清理缓存
+          </a>
+        </div>
+      </Form>
+      {status.github_oauth ||
+      status.oidc_enabled ||
+      status.wechat_login ||
+      status.telegram_oauth ||
+      status.linuxdo_oauth ? (
+        <>
+          <Divider margin='12px' align='center'>
+            {t('第三方登录')}
+          </Divider>
           <div
             style={{
-              justifyContent: 'center',
               display: 'flex',
-              marginTop: 120,
+              justifyContent: 'center',
+              marginTop: 20,
             }}
           >
-            <div style={{ width: 500 }}>
-              <Card>
-                <Title heading={2} style={{ textAlign: 'center' }}>
-                  {t('用户登录')}
-                </Title>
-                <Form>
-                  <Form.Input
-                    field={'username'}
-                    label={t('用户名/邮箱')}
-                    placeholder={t('用户名/邮箱')}
-                    name='username'
-                    onChange={(value) => handleChange('username', value)}
-                  />
-                  <Form.Input
-                    field={'password'}
-                    label={t('密码')}
-                    placeholder={t('密码')}
-                    name='password'
-                    type='password'
-                    onChange={(value) => handleChange('password', value)}
-                  />
-
-                  <Button
-                    theme='solid'
-                    style={{ width: '100%' }}
-                    type={'primary'}
-                    size='large'
-                    htmlType={'submit'}
-                    onClick={handleSubmit}
-                  >
-                    {t('登录')}
-                  </Button>
-                </Form>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    marginTop: 20,
-                  }}
-                >
-                  <Text>
-                    {t('没有账户？')}{' '}
-                    <Link to='/register'>{t('点击注册')}</Link>
-                  </Text>
-                  <Text>
-                    {t('忘记密码？')} <Link to='/reset'>{t('点击重置')}</Link>
-                  </Text>
-                </div>
-                {status.github_oauth ||
-                status.oidc_enabled ||
-                status.wechat_login ||
-                status.telegram_oauth ||
-                status.linuxdo_oauth ? (
-                  <>
-                    <Divider margin='12px' align='center'>
-                      {t('第三方登录')}
-                    </Divider>
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        marginTop: 20,
-                      }}
-                    >
-                      {status.github_oauth ? (
-                        <Button
-                          type='primary'
-                          icon={<IconGithubLogo />}
-                          onClick={() =>
-                            onGitHubOAuthClicked(status.github_client_id)
-                          }
-                        />
-                      ) : (
-                        <></>
-                      )}
-                      {status.oidc_enabled ? (
-                        <Button
-                          type='primary'
-                          icon={<OIDCIcon />}
-                          onClick={() =>
-                            onOIDCClicked(
-                              status.oidc_authorization_endpoint,
-                              status.oidc_client_id,
-                            )
-                          }
-                        />
-                      ) : (
-                        <></>
-                      )}
-                      {status.linuxdo_oauth ? (
-                        <Button
-                          icon={<LinuxDoIcon />}
-                          onClick={() =>
-                            onLinuxDOOAuthClicked(status.linuxdo_client_id)
-                          }
-                        />
-                      ) : (
-                        <></>
-                      )}
-                      {status.wechat_login ? (
-                        <Button
-                          type='primary'
-                          style={{ color: 'rgba(var(--semi-green-5), 1)' }}
-                          icon={<Icon svg={<WeChatIcon />} />}
-                          onClick={onWeChatLoginClicked}
-                        />
-                      ) : (
-                        <></>
-                      )}
-                    </div>
-                    {status.telegram_oauth ? (
-                      <>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'center',
-                            marginTop: 5,
-                          }}
-                        >
-                          <TelegramLoginButton
-                            dataOnauth={onTelegramLoginClicked}
-                            botName={status.telegram_bot_name}
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <></>
-                    )}
-                  </>
-                ) : (
-                  <></>
-                )}
-                <Modal
-                  title={t('微信扫码登录')}
-                  visible={showWeChatLoginModal}
-                  maskClosable={true}
-                  onOk={onSubmitWeChatVerificationCode}
-                  onCancel={() => setShowWeChatLoginModal(false)}
-                  okText={t('登录')}
-                  size={'small'}
-                  centered={true}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItem: 'center',
-                      flexDirection: 'column',
-                    }}
-                  >
-                    <img src={status.wechat_qrcode} />
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <p>
-                      {t(
-                        '微信扫码关注公众号，输入「验证码」获取验证码（三分钟内有效）',
-                      )}
-                    </p>
-                  </div>
-                  <Form size='large'>
-                    <Form.Input
-                      field={'wechat_verification_code'}
-                      placeholder={t('验证码')}
-                      label={t('验证码')}
-                      value={inputs.wechat_verification_code}
-                      onChange={(value) =>
-                        handleChange('wechat_verification_code', value)
-                      }
-                    />
-                  </Form>
-                </Modal>
-              </Card>
-              {turnstileEnabled ? (
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    marginTop: 20,
-                  }}
-                >
-                  <Turnstile
-                    sitekey={turnstileSiteKey}
-                    onVerify={(token) => {
-                      setTurnstileToken(token);
-                    }}
-                  />
-                </div>
-              ) : (
-                <></>
-              )}
-            </div>
+            {status.github_oauth ? (
+              <Button
+                type='primary'
+                icon={<IconGithubLogo />}
+                onClick={() =>
+                  onGitHubOAuthClicked(status.github_client_id)
+                }
+              />
+            ) : (
+              <></>
+            )}
+            {status.oidc_enabled ? (
+              <Button
+                type='primary'
+                icon={<OIDCIcon />}
+                onClick={() =>
+                  onOIDCClicked(
+                    status.oidc_authorization_endpoint,
+                    status.oidc_client_id,
+                  )
+                }
+              />
+            ) : (
+              <></>
+            )}
+            {status.linuxdo_oauth ? (
+              <Button
+                icon={<LinuxDoIcon />}
+                onClick={() =>
+                  onLinuxDOOAuthClicked(status.linuxdo_client_id)
+                }
+              />
+            ) : (
+              <></>
+            )}
+            {status.wechat_login ? (
+              <Button
+                type='primary'
+                style={{ color: 'rgba(var(--semi-green-5), 1)' }}
+                icon={<Icon svg={<WeChatIcon />} />}
+                onClick={onWeChatLoginClicked}
+              />
+            ) : (
+              <></>
+            )}
           </div>
-        </Layout.Content>
-      </Layout>
+          {status.telegram_oauth ? (
+            <>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  marginTop: 5,
+                }}
+              >
+                <TelegramLoginButton
+                  dataOnauth={onTelegramLoginClicked}
+                  botName={status.telegram_bot_name}
+                />
+              </div>
+            </>
+          ) : (
+            <></>
+          )}
+        </>
+      ) : (
+        <></>
+      )}
+      <Modal
+        title={t('微信扫码登录')}
+        visible={showWeChatLoginModal}
+        maskClosable={true}
+        onOk={onSubmitWeChatVerificationCode}
+        onCancel={() => setShowWeChatLoginModal(false)}
+        okText={t('登录')}
+        size={'small'}
+        centered={true}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItem: 'center',
+            flexDirection: 'column',
+          }}
+        >
+          <img src={status.wechat_qrcode} />
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <p>
+            {t(
+              '微信扫码关注公众号，输入「验证码」获取验证码（三分钟内有效）',
+            )}
+          </p>
+        </div>
+        <Form size='large'>
+          <Form.Input
+            field={'wechat_verification_code'}
+            placeholder={t('验证码')}
+            label={t('验证码')}
+            value={inputs.wechat_verification_code}
+            onChange={(value) =>
+              handleChange('wechat_verification_code', value)
+            }
+          />
+        </Form>
+      </Modal>
+      {turnstileEnabled ? (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginTop: 20,
+          }}
+        >
+          <Turnstile
+            sitekey={turnstileSiteKey}
+            onVerify={(token) => {
+              setTurnstileToken(token);
+            }}
+          />
+        </div>
+      ) : (
+        <></>
+      )}
     </div>
   );
 };

@@ -33,6 +33,10 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
+        // 强制缓存破坏 - 每次构建都生成新的文件名
+        entryFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
+        chunkFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
+        assetFileNames: `assets/[name]-[hash]-${Date.now()}.[ext]`,
         manualChunks: {
           'react-core': ['react', 'react-dom', 'react-router-dom'],
           'semi-ui': ['@douyinfe/semi-icons', '@douyinfe/semi-ui'],
@@ -59,13 +63,20 @@ export default defineConfig({
     host: '0.0.0.0',
     proxy: {
       '/api': {
-        target: 'http://localhost:3909',
+        target: 'http://localhost:3000',
         changeOrigin: true,
+        secure: false
       },
       '/pg': {
-        target: 'http://localhost:3909',
+        target: 'http://localhost:3000',
         changeOrigin: true,
+        secure: false
       },
+      '/v1': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false
+      }
     },
   },
 });

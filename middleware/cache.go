@@ -6,11 +6,10 @@ import (
 
 func Cache() func(c *gin.Context) {
 	return func(c *gin.Context) {
-		if c.Request.RequestURI == "/" {
-			c.Header("Cache-Control", "no-cache")
-		} else {
-			c.Header("Cache-Control", "max-age=604800") // one week
-		}
+		// 暂时禁用所有缓存以便测试
+		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+		c.Header("Pragma", "no-cache")
+		c.Header("Expires", "0")
 		c.Next()
 	}
 }

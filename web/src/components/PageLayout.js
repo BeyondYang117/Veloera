@@ -132,6 +132,7 @@ const PageLayout = () => {
             flex: '1 1 auto',
             display: 'flex',
             flexDirection: 'column',
+            background: 'var(--semi-color-bg-0)',
           }}
         >
           <Content
@@ -142,18 +143,11 @@ const PageLayout = () => {
               padding: styleState.shouldInnerPadding ? '24px' : '0',
               position: 'relative',
               marginTop: styleState.isMobile ? '2px' : '0',
+              background: 'var(--semi-color-bg-0)',
             }}
           >
             <App />
           </Content>
-          <Layout.Footer
-            style={{
-              flex: '0 0 auto',
-              width: '100%',
-            }}
-          >
-            <FooterBar />
-          </Layout.Footer>
         </Layout>
       </Layout>
       <ToastContainer />

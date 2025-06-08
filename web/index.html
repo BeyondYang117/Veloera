@@ -10,6 +10,96 @@
       content="OpenAI 接口聚合管理，支持多种渠道包括 Azure，可用于二次分发管理 key，仅单可执行文件，已打包好 Docker 镜像，一键部署，开箱即用"
     />
     <title>Veloera</title>
+    <style>
+      /* 强制暗色模式修复 - 最高优先级 */
+      body[theme-mode='dark'] {
+        background-color: #161a1a !important;
+      }
+
+      body[theme-mode='dark'] * {
+        color: #ffffff !important;
+      }
+
+      body[theme-mode='dark'] h1,
+      body[theme-mode='dark'] h2,
+      body[theme-mode='dark'] h3,
+      body[theme-mode='dark'] h4,
+      body[theme-mode='dark'] h5,
+      body[theme-mode='dark'] h6,
+      body[theme-mode='dark'] p,
+      body[theme-mode='dark'] span,
+      body[theme-mode='dark'] div,
+      body[theme-mode='dark'] li,
+      body[theme-mode='dark'] a {
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+      }
+
+      body[theme-mode='dark'] section,
+      body[theme-mode='dark'] div[style*="background"],
+      body[theme-mode='dark'] footer {
+        background-color: #161a1a !important;
+        background: #161a1a !important;
+      }
+
+      body[theme-mode='dark'] div[style*="background: white"] {
+        background-color: #2a2a2a !important;
+        background: #2a2a2a !important;
+      }
+
+      /* 强制修复Footer和底部区域 */
+      body[theme-mode='dark'] footer,
+      body[theme-mode='dark'] div[style*="background-color: #f8fafc"],
+      body[theme-mode='dark'] div[style*="background: #f8fafc"] {
+        background-color: #161a1a !important;
+        background: #161a1a !important;
+      }
+
+      /* 强制修复所有浅色背景 */
+      body[theme-mode='dark'] div[style*="#f"],
+      body[theme-mode='dark'] div[style*="rgb(248"],
+      body[theme-mode='dark'] div[style*="rgba(248"] {
+        background-color: #161a1a !important;
+        background: #161a1a !important;
+      }
+
+      /* 确保所有文字在任何背景下都可见 */
+      body[theme-mode='dark'] * {
+        color: #ffffff !important;
+        opacity: 1 !important;
+      }
+
+      /* 专门针对styled-components的强制修复 */
+      body[theme-mode='dark'] footer[class*="sc-"],
+      body[theme-mode='dark'] div[class*="sc-"] {
+        background-color: #161a1a !important;
+        background: #161a1a !important;
+      }
+
+      body[theme-mode='dark'] footer[class*="sc-"] *,
+      body[theme-mode='dark'] div[class*="sc-"] * {
+        color: #ffffff !important;
+      }
+
+      /* 强制覆盖CSS变量 */
+      body[theme-mode='dark'] {
+        --text-color: #ffffff !important;
+        --text-secondary: #cccccc !important;
+        --primary-color: #40a9ff !important;
+      }
+
+      /* 最强制的文字颜色修复 */
+      body[theme-mode='dark'] p,
+      body[theme-mode='dark'] h1,
+      body[theme-mode='dark'] h2,
+      body[theme-mode='dark'] h3,
+      body[theme-mode='dark'] a,
+      body[theme-mode='dark'] span,
+      body[theme-mode='dark'] div,
+      body[theme-mode='dark'] li {
+        color: #ffffff !important;
+      }
+    </style>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

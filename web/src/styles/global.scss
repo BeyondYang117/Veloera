@@ -1,4 +1,33 @@
 @import './_palette.scss';
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
+
+/* BigAI首页项目的CSS变量 */
+:root {
+  --primary-color: #ff6b4a;
+  --secondary-color: #4cd2e4;
+  --accent-color: #7c5cff;
+  --background-color: #f8fafc;
+  --gradient-bg: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
+  --text-color: #333;
+  --text-secondary: #666;
+  --card-bg: #ffffff;
+  --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+  --card-hover-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  --transition: all 0.3s ease;
+  
+  /* Auth page variables */
+  --auth-gradient-start: #667eea;
+  --auth-gradient-middle: #764ba2;
+  --auth-gradient-end: #667eea;
+}
+
+/* 渐变文字样式 */
+.gradient-text {
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 
 body,
 body[theme-mode='dark'] .semi-always-light {
@@ -233,4 +262,176 @@ body .semi-always-dark {
   --semi-border-radius-circle: 50%;
   --semi-border-radius-medium: 6px;
   --semi-border-radius-extra-small: 3px;
+  
+  /* 修复暗色模式下输入框样式 */
+  .semi-input {
+    color: rgba(var(--semi-white), 0.9) !important;
+    background-color: rgba(22, 22, 26, 0.8) !important;
+    border-color: rgba(var(--semi-white), 0.2) !important;
+  }
+  
+  .semi-input::placeholder {
+    color: rgba(var(--semi-white), 0.4) !important;
+  }
+  
+  .semi-input:hover, .semi-input:focus {
+    border-color: rgba(var(--semi-brand-5), 1) !important;
+  }
+  
+  /* 修复暗色模式下表单标签文字样式 */
+  .semi-form-field-label {
+    color: rgba(var(--semi-white), 0.8) !important;
+  }
+  
+  /* 确保暗色模式下卡片内容可见 */
+  .semi-card {
+    background-color: var(--semi-color-bg-1) !important;
+  }
+  
+  /* 确保暗色模式下的按钮文字可见 */
+  .semi-button-primary {
+    color: var(--semi-color-bg-0) !important;
+  }
+  
+  /* 确保暗色模式下的链接文字可见 */
+  a {
+    color: rgba(var(--semi-brand-5), 1) !important;
+  }
+  
+  a:hover {
+    color: rgba(var(--semi-brand-6), 1) !important;
+  }
+
+  /* 强制修复暗色模式下的页面背景 */
+  .semi-layout-content {
+    background-color: rgba(22, 22, 26, 1) !important;
+  }
+
+  .semi-layout {
+    background-color: rgba(22, 22, 26, 1) !important;
+  }
+
+  .semi-layout-footer {
+    background-color: rgba(22, 22, 26, 1) !important;
+  }
+
+  /* 强制修复所有首页组件的暗色模式背景 */
+  div[style*="minHeight: '100vh'"],
+  div[style*="min-height: 100vh"],
+  section,
+  .FeaturesSection,
+  .TestimonialsSection,
+  .AdvantagesSection,
+  .SupportSection,
+  .HeroSection,
+  .AiAssistantSection {
+    background-color: rgba(22, 22, 26, 1) !important;
+  }
+
+  /* 确保所有容器都有暗色背景 */
+  div[class*="Container"],
+  div[class*="Section"] {
+    background-color: rgba(22, 22, 26, 1) !important;
+  }
+
+  /* 修复首页主要容器的白色背景 */
+  body > div,
+  #root,
+  #root > div,
+  main,
+  .main-content {
+    background-color: rgba(22, 22, 26, 1) !important;
+  }
+
+  /* 修复首页组件的背景 */
+  div[style*="display: flex"],
+  div[style*="flexDirection: 'column'"],
+  div[style*="flex-direction: column"] {
+    background-color: rgba(22, 22, 26, 1) !important;
+  }
+
+  /* 强制修复Advantages组件的暗色模式 */
+  /* 修复AdvantageItemContainer的白色背景 */
+  div[style*="background: white"],
+  div[style*="background-color: white"],
+  div[style*="background:white"],
+  div[style*="background-color:white"] {
+    background-color: rgba(35, 36, 41, 1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* 修复AdvantageImage的背景 */
+  div[style*="background-color: #f0f9ff"] {
+    background-color: rgba(45, 46, 51, 1) !important;
+  }
+
+  /* 强制修复Footer组件的暗色模式 */
+  footer,
+  footer[style*="background-color: #f8fafc"],
+  div[style*="background-color: #f8fafc"] {
+    background-color: rgba(22, 22, 26, 1) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* 确保Footer内的文字可见 */
+  footer *,
+  footer h1, footer h2, footer h3, footer h4, footer h5, footer h6,
+  footer p, footer span, footer a, footer div {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  /* Footer链接悬停效果 */
+  footer a:hover {
+    color: rgba(var(--semi-brand-5), 1) !important;
+  }
+
+  /* 最强制的暗色模式修复 - 覆盖所有可能的样式 */
+
+  /* 全局强制文字颜色 - 最高优先级 */
+  * {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  /* 标题文字 */
+  h1, h2, h3, h4, h5, h6,
+  [class*="Title"], [class*="title"],
+  .semi-typography-h1, .semi-typography-h2, .semi-typography-h3 {
+    color: rgba(255, 255, 255, 0.95) !important;
+    font-weight: 600 !important;
+  }
+
+  /* 段落和普通文字 */
+  p, span, div, li, a, label,
+  [class*="Description"], [class*="description"],
+  .semi-typography-paragraph, .semi-typography-text {
+    color: rgba(255, 255, 255, 0.85) !important;
+  }
+
+  /* 强制覆盖内联样式 */
+  [style*="color"] {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  /* 强制覆盖所有可能的文字颜色类 */
+  [class*="text-"], [class*="color-"] {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  /* 确保Semi UI组件文字可见 */
+  .semi-typography, .semi-card, .semi-button {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  /* 修复可能的透明文字 */
+  [style*="opacity"], [class*="opacity"] {
+    opacity: 1 !important;
+  }
+
+  /* 确保CSS变量正确设置 */
+  --semi-color-text-0: rgba(255, 255, 255, 0.95) !important;
+  --semi-color-text-1: rgba(255, 255, 255, 0.85) !important;
+  --semi-color-text-2: rgba(255, 255, 255, 0.75) !important;
+  --semi-color-text-3: rgba(255, 255, 255, 0.65) !important;
+  --text-color: rgba(255, 255, 255, 0.95) !important;
+  --text-secondary: rgba(255, 255, 255, 0.75) !important;
 }

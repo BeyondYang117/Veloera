@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState, useTransition } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { UserContext } from '../context/User';
 import { StatusContext } from '../context/Status';
@@ -86,6 +86,7 @@ const routerMap = {
   midjourney: '/midjourney',
   setting: '/setting',
   about: '/about',
+  contact: '/contact',
   detail: '/detail',
   pricing: '/pricing',
   task: '/task',
@@ -107,7 +108,9 @@ const SiderBar = () => {
   const theme = useTheme();
   const setTheme = useSetTheme();
   const location = useLocation();
+  const navigate = useNavigate();
   const [routerMapState, setRouterMapState] = useState(routerMap);
+  const [isPending, startTransition] = useTransition();
 
   // 预先计算所有可能的图标样式
   const allItemKeys = useMemo(() => {
@@ -406,6 +409,12 @@ const SiderBar = () => {
             <Link
               style={{ textDecoration: 'none' }}
               to={routerMapState[props.itemKey] || routerMap[props.itemKey]}
+              onClick={(e) => {
+                e.preventDefault();
+                startTransition(() => {
+                  navigate(routerMapState[props.itemKey] || routerMap[props.itemKey]);
+                });
+              }}
             >
               {itemElement}
             </Link>
@@ -422,6 +431,9 @@ const SiderBar = () => {
           if (openedKeys.includes(key.itemKey)) {
             setOpenedKeys(openedKeys.filter((k) => k !== key.itemKey));
           }
+
+          // 确保侧边栏保持显示状态（不自动隐藏）
+          styleDispatch({ type: 'SET_SIDER', payload: true });
 
           setSelectedKeys([key.itemKey]);
         }}

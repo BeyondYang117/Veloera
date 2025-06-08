@@ -1,0 +1,507 @@
+/* 修复暗色模式下登录和注册页面的表单样式 */
+
+/* 通用输入框样式修复 */
+body[theme-mode='dark'] .semi-input,
+body[theme-mode='dark'] .semi-input-wrapper .semi-input,
+body[theme-mode='dark'] .semi-password-input,
+body[theme-mode='dark'] .semi-input-wrapper .semi-password-input {
+  color: #ffffff !important;
+  background-color: rgba(35, 36, 41, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  font-weight: 600 !important;
+}
+
+/* 输入框占位符文本颜色 */
+body[theme-mode='dark'] .semi-input::placeholder,
+body[theme-mode='dark'] .semi-password-input::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* 输入框聚焦和悬停状态 */
+body[theme-mode='dark'] .semi-input:focus,
+body[theme-mode='dark'] .semi-input:hover,
+body[theme-mode='dark'] .semi-password-input:focus,
+body[theme-mode='dark'] .semi-password-input:hover {
+  border-color: var(--semi-color-primary) !important;
+  box-shadow: 0 0 0 2px rgba(var(--semi-color-primary-rgb), 0.3) !important;
+}
+
+/* 表单字段标签文本颜色 */
+body[theme-mode='dark'] .semi-form-field-label,
+body[theme-mode='dark'] .semi-form-field-label-text {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 卡片背景颜色 */
+body[theme-mode='dark'] .semi-card {
+  background-color: rgba(35, 36, 41, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 按钮文本颜色 */
+body[theme-mode='dark'] .semi-button-primary {
+  background-color: var(--semi-color-primary) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 链接文本颜色 */
+body[theme-mode='dark'] a {
+  color: #40a9ff !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2) !important;
+}
+
+body[theme-mode='dark'] a:hover {
+  color: #69c0ff !important;
+}
+
+/* 分割线颜色 */
+body[theme-mode='dark'] .semi-divider {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* 页面文本颜色 */
+body[theme-mode='dark'] .semi-typography-title,
+body[theme-mode='dark'] .semi-typography-text {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ============== 新增：修复Auth页面暗色模式下表单容器 ============== */
+
+/* Auth页面表单容器 - 暗色模式 */
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] {
+  background: rgba(35, 36, 41, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 确保Auth页面表单内所有文本在暗色模式下可见 */
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] * {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 修复表单标签文本 */
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-form-field-label-text {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+/* 确保输入框内文本可见 */
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-input,
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-password-input {
+  color: #ffffff !important;
+  background-color: rgba(45, 46, 51, 0.7) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  font-weight: 600 !important;
+}
+
+/* 输入框聚焦状态 */
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-input:focus,
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-password-input:focus {
+  border-color: var(--semi-color-primary) !important;
+  box-shadow: 0 0 0 2px rgba(var(--semi-color-primary-rgb), 0.3) !important;
+}
+
+/* 修复按钮文本和背景对比度 */
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-button {
+  background-color: var(--semi-color-primary) !important;
+  color: white !important;
+  border-color: transparent !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 密码输入框中的图标 */
+body[theme-mode='dark'] .semi-password-input-suffix .semi-icon,
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-password-input-suffix .semi-icon {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* 确保输入框的placeholder文本在暗色模式下可见 */
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-input::placeholder,
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-password-input::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* 修复表单错误信息的样式 */
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-form-field-error-message {
+  color: #ff6b6b !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  font-weight: 600 !important;
+}
+
+/* 调整复选框和单选框样式 */
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-checkbox-inner-checked,
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-radio-inner-checked {
+  background-color: var(--semi-color-primary) !important;
+  border-color: var(--semi-color-primary) !important;
+}
+
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-checkbox-wrapper,
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-radio-wrapper {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 新增：通用表单容器修复 - 处理更多情况 */
+body[theme-mode='dark'] div[class*="form"] .semi-input,
+body[theme-mode='dark'] div[class*="form"] .semi-password-input,
+body[theme-mode='dark'] div[class*="form"] .semi-textarea {
+  color: #ffffff !important;
+  background-color: rgba(45, 46, 51, 0.7) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  font-weight: 600 !important;
+}
+
+/* 修复注册表单特定元素 */
+body[theme-mode='dark'] .semi-steps-item-title {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+body[theme-mode='dark'] .semi-steps-item-description {
+  color: rgba(255, 255, 255, 0.85) !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2) !important;
+}
+
+body[theme-mode='dark'] .semi-steps-item-icon {
+  background-color: rgba(35, 36, 41, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+body[theme-mode='dark'] .semi-steps-item-active .semi-steps-item-icon {
+  background-color: var(--semi-color-primary) !important;
+  border-color: var(--semi-color-primary) !important;
+}
+
+/* 修复验证码输入区域 */
+body[theme-mode='dark'] .semi-input-group-addon {
+  background-color: rgba(35, 36, 41, 0.95) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 修复下拉选择器 */
+body[theme-mode='dark'] .semi-select-selection,
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-select-selection {
+  background-color: rgba(45, 46, 51, 0.7) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+body[theme-mode='dark'] .semi-select-selection-text,
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-select-selection-text {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+body[theme-mode='dark'] .semi-select-dropdown,
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-select-dropdown {
+  background-color: rgba(35, 36, 41, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+body[theme-mode='dark'] .semi-select-option,
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-select-option {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+body[theme-mode='dark'] .semi-select-option-selected,
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.95)"] .semi-select-option-selected {
+  background-color: rgba(var(--semi-color-primary-rgb), 0.2) !important;
+}
+
+/* 新增：注册表单特别修复 */
+body[theme-mode='dark'] div[class*="AuthContainer"] div[class*="FormCard"] {
+  background-color: rgba(35, 40, 55, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+body[theme-mode='dark'] div[class*="AuthContainer"] div[class*="FormCard"] * {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+body[theme-mode='dark'] div[class*="AuthContainer"] div[class*="FormCard"] input,
+body[theme-mode='dark'] div[class*="AuthContainer"] div[class*="FormCard"] .semi-input,
+body[theme-mode='dark'] div[class*="AuthContainer"] div[class*="FormCard"] .semi-password-input {
+  background-color: rgba(45, 46, 51, 0.7) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+body[theme-mode='dark'] div[class*="AuthContainer"] div[class*="FormCard"] button,
+body[theme-mode='dark'] div[class*="AuthContainer"] div[class*="FormCard"] .semi-button {
+  background-color: var(--semi-color-primary) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+  border: none !important;
+}
+
+body[theme-mode='dark'] div[class*="AuthContainer"] div[class*="FormCard"] a {
+  color: #40a9ff !important;
+}
+
+/* ============== 亮色模式修复 ============== */
+
+/* 修复亮色模式下登录/注册页面左侧面板的样式 */
+
+/* 主容器渐变背景升级 */
+.AuthContainer,
+div[class*="AuthContainer"] {
+  background: linear-gradient(135deg, 
+    #4776E6 0%, 
+    #8E54E9 50%, 
+    #4776E6 100%) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 添加动态光效背景 */
+.AuthContainer::before,
+div[class*="AuthContainer"]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 40%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.25) 0%, transparent 40%),
+    radial-gradient(circle at 40% 70%, rgba(142, 84, 233, 0.4) 0%, transparent 50%);
+  animation: float 20s ease-in-out infinite;
+  opacity: 1;
+}
+
+/* 左侧品牌区域美化 */
+.BrandSection,
+div[class*="BrandSection"] {
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 0 24px 24px 0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 2;
+  position: relative;
+}
+
+/* 品牌标题优化 */
+.BrandTitle,
+h1[class*="BrandTitle"] {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.5px !important;
+  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.2) !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* 副标题样式优化 */
+.BrandSubtitle,
+div[class*="BrandSubtitle"],
+div[class*="BrandSubtitle"] span {
+  color: #ffffff !important;
+  font-weight: 500 !important;
+  opacity: 0.95 !important;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.15) !important;
+  letter-spacing: 0.2px !important;
+}
+
+/* 增强Logo效果 */
+.Logo img,
+img.Logo,
+.BrandSection img {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important;
+  border: 3px solid rgba(255, 255, 255, 0.9) !important;
+  transition: all 0.3s ease !important;
+}
+
+.Logo img:hover,
+img.Logo:hover,
+.BrandSection img:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* 特性列表项美化 */
+.FeatureItem,
+div[class*="FeatureItem"] {
+  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.3s ease !important;
+  transform: translateZ(0) !important;
+}
+
+.FeatureItem:hover,
+div[class*="FeatureItem"]:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* 特性图标样式增强 */
+.FeatureIcon,
+div[class*="FeatureIcon"] {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
+  border: 2px solid rgba(255, 255, 255, 0.8) !important;
+  transition: all 0.3s ease !important;
+}
+
+.FeatureItem:hover .FeatureIcon,
+div[class*="FeatureItem"]:hover div[class*="FeatureIcon"] {
+  transform: scale(1.08) !important;
+}
+
+/* 特性文本优化 */
+.FeatureText,
+div[class*="FeatureText"] {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.3px !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* 表单卡片样式优化 */
+.FormCard,
+div[class*="FormCard"] {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(15px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.7) !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* 添加额外装饰元素 */
+.BrandSection::after,
+div[class*="BrandSection"]::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  z-index: -1;
+}
+
+/* 确保模式切换按钮在浅色模式下清晰可见 */
+.ModeToggle,
+div[class*="ModeToggle"] {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* 新增：增强Auth页面暗色模式修复，针对内联样式的特殊情况 */
+
+/* 强制修复Auth页面内的TypeAnimation组件 */
+body[theme-mode='dark'] [class*="TypeAnimation"],
+body[theme-mode='dark'] [data-testid*="type-animation"],
+body[theme-mode='dark'] div:has(> [data-testid*="type-animation"]) > * {
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+}
+
+/* 特定针对登录/注册页面左侧品牌区域 */
+body[theme-mode='dark'] [style*="backdropFilter: blur"],
+body[theme-mode='dark'] [style*="backdrop-filter: blur"] {
+  background-color: rgba(35, 40, 60, 0.7) !important;
+}
+
+/* 强制处理所有特性项目文本 */
+body[theme-mode='dark'] div[style*="display: flex"] > div[style*="display: flex"] > div[style*="fontSize"] {
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+  font-weight: 600 !important;
+}
+
+/* 直接针对Auth页面特定元素 */
+body[theme-mode='dark'] div[style*="minHeight: '100vh'"] h1,
+body[theme-mode='dark'] div[style*="minHeight: '100vh'"] div[style*="fontSize"],
+body[theme-mode='dark'] div[style*="min-height: 100vh"] h1,
+body[theme-mode='dark'] div[style*="min-height: 100vh"] div[style*="font-size"] {
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: none !important;
+  font-weight: 600 !important;
+}
+
+/* 修复内联样式的特性卡片 */
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255, 0.15)"],
+body[theme-mode='dark'] div[style*="background: linear-gradient"] {
+  background: rgba(40, 44, 65, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* 为特性图标添加更好的对比度 */
+body[theme-mode='dark'] div[style*="borderRadius: '50%'"],
+body[theme-mode='dark'] div[style*="border-radius: 50%"] {
+  background: linear-gradient(135deg, #1890ff 0%, #6d56c1 100%) !important;
+  border: 2px solid rgba(255, 255, 255, 0.9) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* 最高优先级覆盖所有Auth页面内容 */
+body[theme-mode='dark'] div[style*="minHeight: '100vh'"] *:not(i):not(svg):not(.semi-icon):not([class*="icon"]),
+body[theme-mode='dark'] div[style*="min-height: 100vh"] *:not(i):not(svg):not(.semi-icon):not([class*="icon"]) {
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* 确保Auth页面左侧的特性文本在深色模式下可见 */
+body[theme-mode='dark'] div[style*="display: flex"] > div[style*="flexDirection: 'column'"] > div[style*="display: flex"] {
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  background-color: rgba(40, 44, 65, 0.8) !important;
+}
+
+/* 额外处理登录/注册页面表单卡片 */
+body[theme-mode='dark'] div[style*="background: rgba(255, 255, 255"] {
+  background: rgba(35, 40, 55, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* 特殊处理: 绕过可能的内联样式权重问题 */
+@media screen {
+  body[theme-mode='dark'] div[style*="color:"] {
+    color: #ffffff !important;
+  }
+  
+  body[theme-mode='dark'] div[style*="background:"] input,
+  body[theme-mode='dark'] div[style*="background:"] .semi-input,
+  body[theme-mode='dark'] div[style*="background:"] .semi-password-input {
+    color: #ffffff !important;
+    background-color: rgba(45, 46, 51, 0.7) !important;
+  }
+  
+  body[theme-mode='dark'] div[style*="background-color:"] {
+    background-color: rgba(35, 40, 55, 0.95) !important;
+  }
+}
+
+/* 暗色模式下表单容器特殊处理 */
+body[theme-mode='dark'] div[class*="AuthContainer"] div[class*="FormCard"] {
+  background-color: rgba(35, 40, 55, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+} 

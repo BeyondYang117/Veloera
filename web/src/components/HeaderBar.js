@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useTransition, startTransition } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from '../context/User';
 import { useSetTheme, useTheme } from '../context/Theme';
@@ -115,6 +115,7 @@ const HeaderBar = () => {
   const [statusState, statusDispatch] = useContext(StatusContext);
   let navigate = useNavigate();
   const [currentLang, setCurrentLang] = useState(i18n.language);
+  const [isPending, startTransition] = useTransition();
 
   const systemName = getSystemName();
   const logo = getLogo();
@@ -137,7 +138,7 @@ const HeaderBar = () => {
     {
       text: t('控制台'),
       itemKey: 'detail',
-      to: '/',
+      to: '/detail',
       icon: <IconTerminal style={headerIconStyle} />,
     },
     {
@@ -146,23 +147,17 @@ const HeaderBar = () => {
       to: '/pricing',
       icon: <IconPriceTag style={headerIconStyle} />,
     },
-    // Only include the docs button if docsLink exists
-    ...(docsLink
-      ? [
-          {
-            text: t('文档'),
-            itemKey: 'docs',
-            isExternal: true,
-            externalLink: docsLink,
-            icon: <IconHelpCircle style={headerIconStyle} />,
-          },
-        ]
-      : []),
     {
-      text: t('关于'),
-      itemKey: 'about',
-      to: '/about',
-      icon: <IconInfoCircle style={headerIconStyle} />,
+      text: t('文档'),
+      itemKey: 'docs',
+      to: '/docs',
+      icon: <IconHelpCircle style={headerIconStyle} />,
+    },
+    {
+      text: t('联系我们'),
+      itemKey: 'contact',
+      to: '/contact',
+      icon: <IconComment style={headerIconStyle} />,
     },
   ];
 
@@ -223,6 +218,11 @@ const HeaderBar = () => {
 
   const handleLanguageChange = (lang) => {
     i18n.changeLanguage(lang);
+    
+    // If user is not logged in, ensure sidebar is hidden when changing language
+    if (!userState.user) {
+      styleDispatch({ type: 'SET_SIDER', payload: false });
+    }
   };
 
   return (
@@ -244,17 +244,40 @@ const HeaderBar = () => {
                 detail: '/detail',
                 home: '/',
                 chat: '/chat',
+                contact: '/contact',
+                docs: '/docs',
               };
               return (
                 <div
                   onClick={(e) => {
-                    if (props.itemKey === 'home') {
+                    // 特殊处理：控制台按钮
+                    if (props.itemKey === 'detail') {
+                      if (userState.user) {
+                        // 登录状态：始终显示侧边栏
+                        styleDispatch({
+                          type: 'SET_INNER_PADDING',
+                          payload: true,
+                        });
+                        styleDispatch({ type: 'SET_SIDER', payload: true });
+                      } else {
+                        // 未登录状态：直接跳转到登录页面
+                        e.preventDefault();
+                        startTransition(() => {
+                          navigate('/login');
+                        });
+                        return;
+                      }
+                    }
+                    // 特殊处理：首页、登录、注册、定价、文档、联系我们页面需要隐藏侧边栏
+                    else if (['home', 'login', 'register', 'pricing', 'docs', 'contact'].includes(props.itemKey)) {
                       styleDispatch({
                         type: 'SET_INNER_PADDING',
                         payload: false,
                       });
                       styleDispatch({ type: 'SET_SIDER', payload: false });
-                    } else {
+                    }
+                    // 其他页面保持现有逻辑
+                    else {
                       styleDispatch({
                         type: 'SET_INNER_PADDING',
                         payload: true,
@@ -280,6 +303,12 @@ const HeaderBar = () => {
                       className='header-bar-text'
                       style={{ textDecoration: 'none' }}
                       to={routerMap[props.itemKey]}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        startTransition(() => {
+                          navigate(routerMap[props.itemKey]);
+                        });
+                      }}
                     >
                       {itemElement}
                     </Link>
@@ -403,7 +432,7 @@ const HeaderBar = () => {
                 {/* <Nav.Item itemKey={'about'} icon={<IconHelpCircle />} /> */}
                 <>
                   <Switch
-                    checkedText='🌞'
+                    checkedText=''
                     size={styleState.isMobile ? 'default' : 'large'}
                     checked={theme === 'dark'}
                     uncheckedText='🌙'
@@ -465,19 +494,51 @@ const HeaderBar = () => {
                   </>
                 ) : (
                   <>
-                    <Nav.Item
-                      itemKey={'login'}
-                      text={!styleState.isMobile ? t('登录') : null}
-                      icon={<IconUser style={headerIconStyle} />}
-                    />
+                    <Link
+                      to="/login"
+                      style={{ textDecoration: 'none' }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        startTransition(() => {
+                          navigate('/login');
+                        });
+                      }}
+                    >
+                      <Nav.Item
+                        itemKey={'login'}
+                        text={!styleState.isMobile ? t('登录') : null}
+                        icon={<IconUser style={headerIconStyle} />}
+                        onClick={() => {
+                          // 显式设置侧边栏状态为false
+                          styleDispatch({ type: 'SET_SIDER', payload: false });
+                          styleDispatch({ type: 'SET_INNER_PADDING', payload: false });
+                        }}
+                      />
+                    </Link>
                     {
                       // Hide register option in self-use mode
                       !styleState.isMobile && !isSelfUseMode && (
-                        <Nav.Item
-                          itemKey={'register'}
-                          text={t('注册')}
-                          icon={<IconKey style={headerIconStyle} />}
-                        />
+                        <Link
+                          to="/register"
+                          style={{ textDecoration: 'none' }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            startTransition(() => {
+                              navigate('/register');
+                            });
+                          }}
+                        >
+                          <Nav.Item
+                            itemKey={'register'}
+                            text={t('注册')}
+                            icon={<IconKey style={headerIconStyle} />}
+                            onClick={() => {
+                              // 显式设置侧边栏状态为false
+                              styleDispatch({ type: 'SET_SIDER', payload: false });
+                              styleDispatch({ type: 'SET_INNER_PADDING', payload: false });
+                            }}
+                          />
+                        </Link>
                       )
                     }
                   </>
