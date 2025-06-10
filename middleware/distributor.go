@@ -63,6 +63,11 @@ func GetPrefixChannels(group string) map[string][]*model.Channel {
 	return getPrefixChannels(group)
 }
 
+// SelectChannelByPrefix is the exported version of selectChannelByPrefix for use by other packages
+func SelectChannelByPrefix(group, prefix, originalModel string) (*model.Channel, error) {
+	return selectChannelByPrefix(group, prefix, originalModel)
+}
+
 // ResetChannelKeyIndex resets the round-robin key index for a specific channel
 // This can be called when a channel's keys are updated
 func ResetChannelKeyIndex(channelId int) {
@@ -72,6 +77,18 @@ func ResetChannelKeyIndex(channelId int) {
 	// Reset the key index and hash to force recalculation next time
 	delete(channelKeysIndex, channelId)
 	delete(channelKeysHash, channelId)
+}
+
+// RefreshPrefixChannelsCache refreshes prefix cache for one or multiple groups.
+// Groups should be a comma separated string, empty entries are ignored.
+func RefreshPrefixChannelsCache(groups string) {
+	for _, g := range strings.Split(groups, ",") {
+		g = strings.TrimSpace(g)
+		if g == "" {
+			continue
+		}
+		refreshPrefixChannelsCache(g)
+	}
 }
 
 // refreshPrefixChannelsCache refreshes the prefix channels cache for a given group
@@ -389,7 +406,7 @@ func SetupContextForSelectedChannel(c *gin.Context, channel *model.Channel, mode
 	c.Set("channel_id", channel.Id)
 	c.Set("channel_name", channel.Name)
 	c.Set("channel_type", channel.Type)
-c.Set("channel_create_time", channel.CreatedTime)
+	c.Set("channel_create_time", channel.CreatedTime)
 	c.Set("channel_setting", channel.GetSetting())
 	c.Set("param_override", channel.GetParamOverride())
 

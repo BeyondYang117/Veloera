@@ -11,6 +11,7 @@ type GeminiSettings struct {
 	SupportedImagineModels                []string          `json:"supported_imagine_models"`
 	ThinkingAdapterEnabled                bool              `json:"thinking_adapter_enabled"`
 	ThinkingAdapterBudgetTokensPercentage float64           `json:"thinking_adapter_budget_tokens_percentage"`
+	ModelsSupportedThinkingBudget         []string          `json:"models_supported_thinking_budget"`
 }
 
 // 默认配置
@@ -23,8 +24,8 @@ var defaultGeminiSettings = GeminiSettings{
 		"HARM_CATEGORY_DANGEROUS_CONTENT": "BLOCK_NONE",
 	},
 	VersionSettings: map[string]string{
-		"default":          "v1beta",
-		"gemini-1.0-pro":   "v1beta",
+		"default":        "v1beta",
+		"gemini-1.0-pro": "v1beta",
 	},
 	SupportedImagineModels: []string{
 		"gemini-2.0-flash-exp-image-generation",
@@ -32,6 +33,10 @@ var defaultGeminiSettings = GeminiSettings{
 	},
 	ThinkingAdapterEnabled:                false,
 	ThinkingAdapterBudgetTokensPercentage: 0.6,
+	ModelsSupportedThinkingBudget: []string{
+		"gemini-2.5-flash-preview-05-20",
+		"gemini-2.5-flash-preview-04-17",
+	},
 }
 
 // 全局实例

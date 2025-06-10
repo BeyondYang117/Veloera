@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"veloera/common"
+	"veloera/middleware"
 	"veloera/model"
 
 	"github.com/gin-gonic/gin"
@@ -119,10 +120,16 @@ func FetchUpstreamModels(c *gin.Context) {
 		baseURL = channel.GetBaseURL()
 	}
 	url := fmt.Sprintf("%s/v1/models", baseURL)
+
+	if strings.HasSuffix(baseURL, "/chat/completions") {
+		url = strings.TrimSuffix(baseURL, "/chat/completions") + "/models"
+	}
+
 	if channel.Type == common.ChannelTypeGemini {
 		url = fmt.Sprintf("%s/v1beta/openai/models", baseURL)
 	}
-	body, err := GetResponseBody("GET", url, channel, GetAuthHeader(channel.Key))
+	key := strings.Split(channel.Key, ",")[0]
+	body, err := GetResponseBody("GET", url, channel, GetAuthHeader(key))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,
@@ -295,6 +302,9 @@ func AddChannel(c *gin.Context) {
 		return
 	}
 
+	// refresh prefix cache for the groups this channel belongs to
+	middleware.RefreshPrefixChannelsCache(channel.Group)
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
@@ -365,6 +375,20 @@ func DisableTagChannels(c *gin.Context) {
 		})
 		return
 	}
+	if channels, err := model.GetChannelsByTag(channelTag.Tag, false); err == nil {
+		groupSet := make(map[string]struct{})
+		for _, ch := range channels {
+			for _, g := range strings.Split(ch.Group, ",") {
+				g = strings.TrimSpace(g)
+				if g != "" {
+					groupSet[g] = struct{}{}
+				}
+			}
+		}
+		for g := range groupSet {
+			middleware.RefreshPrefixChannelsCache(g)
+		}
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
@@ -389,6 +413,20 @@ func EnableTagChannels(c *gin.Context) {
 			"message": err.Error(),
 		})
 		return
+	}
+	if channels, err := model.GetChannelsByTag(channelTag.Tag, false); err == nil {
+		groupSet := make(map[string]struct{})
+		for _, ch := range channels {
+			for _, g := range strings.Split(ch.Group, ",") {
+				g = strings.TrimSpace(g)
+				if g != "" {
+					groupSet[g] = struct{}{}
+				}
+			}
+		}
+		for g := range groupSet {
+			middleware.RefreshPrefixChannelsCache(g)
+		}
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
@@ -499,6 +537,9 @@ func UpdateChannel(c *gin.Context) {
 		})
 		return
 	}
+
+	// refresh prefix cache as channel configuration may change
+	middleware.RefreshPrefixChannelsCache(channel.Group)
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
@@ -529,6 +570,10 @@ func FetchModels(c *gin.Context) {
 
 	client := &http.Client{}
 	url := fmt.Sprintf("%s/v1/models", baseURL)
+
+	if strings.HasSuffix(baseURL, "/chat/completions") {
+		url = strings.TrimSuffix(baseURL, "/chat/completions") + "/models"
+	}
 
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {

@@ -3,10 +3,12 @@ package gemini
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 	"strings"
 	"unicode/utf8"
+
 	"veloera/common"
 	"veloera/constant"
 	"veloera/dto"
@@ -14,10 +16,7 @@ import (
 	"veloera/relay/helper"
 	"veloera/service"
 	"veloera/setting/model_setting"
-
-	"github.com/gin-gonic/gin"
 )
-
 // Setting safety to the lowest possible values since Gemini is already powerless enough
 func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest, info *relaycommon.RelayInfo) (*GeminiChatRequest, error) {
 
@@ -28,10 +27,14 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest, info *relaycommon
 			TopP:            textRequest.TopP,
 			MaxOutputTokens: textRequest.MaxTokens,
 			Seed:            int64(textRequest.Seed),
-			ThinkingConfig: &GeminiThinkingConfig{
-				IncludeThoughts: true,
-			},
 		},
+	}
+
+	// Check if the current model supports thinking budget
+	if isModelSupportedThinkingBudget(info.OriginModelName, model_setting.GetGeminiSettings().ModelsSupportedThinkingBudget) {
+		geminiRequest.GenerationConfig.ThinkingConfig = &GeminiThinkingConfig{
+			IncludeThoughts: true,
+		}
 	}
 
 	if model_setting.IsGeminiModelSupportImagine(info.UpstreamModelName) {
@@ -42,14 +45,16 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest, info *relaycommon
 	}
 
 	if strings.HasPrefix(info.UpstreamModelName, "gemini-2.5-") && model_setting.GetGeminiSettings().ThinkingAdapterEnabled {
-		if strings.HasSuffix(info.OriginModelName, "-thinking") {
-			budgetTokens := model_setting.GetGeminiSettings().ThinkingAdapterBudgetTokensPercentage * float64(geminiRequest.GenerationConfig.MaxOutputTokens)
-			if budgetTokens == 0 || budgetTokens > 24576 {
-				budgetTokens = 24576
+		if geminiRequest.GenerationConfig.ThinkingConfig != nil { // Only apply if ThinkingConfig was instantiated
+			if strings.HasSuffix(info.OriginModelName, "-thinking") {
+				budgetTokens := model_setting.GetGeminiSettings().ThinkingAdapterBudgetTokensPercentage * float64(geminiRequest.GenerationConfig.MaxOutputTokens)
+				if budgetTokens == 0 || budgetTokens > 24576 {
+					budgetTokens = 24576
+				}
+				geminiRequest.GenerationConfig.ThinkingConfig.SetThinkingBudget(int(budgetTokens))
+			} else if strings.HasSuffix(info.OriginModelName, "-nothinking") {
+				geminiRequest.GenerationConfig.ThinkingConfig.SetThinkingBudget(0)
 			}
-			geminiRequest.GenerationConfig.ThinkingConfig.SetThinkingBudget(int(budgetTokens))
-		} else if strings.HasSuffix(info.OriginModelName, "-nothinking") {
-			geminiRequest.GenerationConfig.ThinkingConfig.SetThinkingBudget(0)
 		}
 	}
 
@@ -282,91 +287,127 @@ func CovertGemini2OpenAI(textRequest dto.GeneralOpenAIRequest, info *relaycommon
 	return &geminiRequest, nil
 }
 
+// isModelSupportedThinkingBudget checks if a given model is in the list of models supporting thinking budget.
+func isModelSupportedThinkingBudget(model string, supportedModels []string) bool {
+	for _, supportedModel := range supportedModels {
+		if supportedModel == model {
+			return true
+		}
+	}
+	return false
+}
+
 // cleanFunctionParameters recursively removes unsupported fields from Gemini function parameters.
 func cleanFunctionParameters(params interface{}) interface{} {
 	if params == nil {
 		return nil
 	}
 
-	paramMap, ok := params.(map[string]interface{})
-	if !ok {
-		// Not a map, return as is (e.g., could be an array or primitive)
-		return params
-	}
+	switch v := params.(type) {
+	case map[string]interface{}:
+		// Create a copy to avoid modifying the original
+		cleanedMap := make(map[string]interface{})
+		for k, val := range v {
+			cleanedMap[k] = val
+		}
 
-	// Create a copy to avoid modifying the original
-	cleanedMap := make(map[string]interface{})
-	for k, v := range paramMap {
-		cleanedMap[k] = v
-	}
+		// Remove unsupported root-level fields
+		delete(cleanedMap, "default")
+		delete(cleanedMap, "exclusiveMaximum")
+		delete(cleanedMap, "exclusiveMinimum")
+		delete(cleanedMap, "$schema")
+		delete(cleanedMap, "additionalProperties")
 
-	// Clean properties
-	if props, ok := cleanedMap["properties"].(map[string]interface{}); ok && props != nil {
-		cleanedProps := make(map[string]interface{})
-		for propName, propValue := range props {
-			propMap, ok := propValue.(map[string]interface{})
-			if !ok {
-				cleanedProps[propName] = propValue // Keep non-map properties
-				continue
-			}
-
-			// Create a copy of the property map
-			cleanedPropMap := make(map[string]interface{})
-			for k, v := range propMap {
-				cleanedPropMap[k] = v
-			}
-
-			// Remove unsupported fields
-			delete(cleanedPropMap, "default")
-			delete(cleanedPropMap, "exclusiveMaximum")
-			delete(cleanedPropMap, "exclusiveMinimum")
-
-			// Check and clean 'format' for string types
-			if propType, typeExists := cleanedPropMap["type"].(string); typeExists && propType == "string" {
-				if formatValue, formatExists := cleanedPropMap["format"].(string); formatExists {
-					if formatValue != "enum" && formatValue != "date-time" {
-						delete(cleanedPropMap, "format")
-					}
+		// Check and clean 'format' for string types
+		if propType, typeExists := cleanedMap["type"].(string); typeExists && propType == "string" {
+			if formatValue, formatExists := cleanedMap["format"].(string); formatExists {
+				if formatValue != "enum" && formatValue != "date-time" {
+					delete(cleanedMap, "format")
 				}
 			}
+		}
 
-			// Recursively clean nested properties within this property if it's an object/array
-			// Check the type before recursing
-			if propType, typeExists := cleanedPropMap["type"].(string); typeExists && (propType == "object" || propType == "array") {
-				cleanedProps[propName] = cleanFunctionParameters(cleanedPropMap)
-			} else {
-				cleanedProps[propName] = cleanedPropMap // Assign the cleaned map back if not recursing
+		// Clean properties
+		if props, ok := cleanedMap["properties"].(map[string]interface{}); ok && props != nil {
+			cleanedProps := make(map[string]interface{})
+			for propName, propValue := range props {
+				cleanedProps[propName] = cleanFunctionParameters(propValue)
 			}
-
+			cleanedMap["properties"] = cleanedProps
 		}
-		cleanedMap["properties"] = cleanedProps
-	}
 
-	// Recursively clean items in arrays if needed (e.g., type: array, items: { ... })
-	if items, ok := cleanedMap["items"].(map[string]interface{}); ok && items != nil {
-		cleanedMap["items"] = cleanFunctionParameters(items)
-	}
-	// Also handle items if it's an array of schemas
-	if itemsArray, ok := cleanedMap["items"].([]interface{}); ok {
-		cleanedItemsArray := make([]interface{}, len(itemsArray))
-		for i, item := range itemsArray {
-			cleanedItemsArray[i] = cleanFunctionParameters(item)
+		// Recursively clean items in arrays
+		if items, ok := cleanedMap["items"].(map[string]interface{}); ok && items != nil {
+			cleanedMap["items"] = cleanFunctionParameters(items)
 		}
-		cleanedMap["items"] = cleanedItemsArray
-	}
-
-	// Recursively clean other schema composition keywords if necessary
-	for _, field := range []string{"allOf", "anyOf", "oneOf"} {
-		if nested, ok := cleanedMap[field].([]interface{}); ok {
-			cleanedNested := make([]interface{}, len(nested))
-			for i, item := range nested {
-				cleanedNested[i] = cleanFunctionParameters(item)
+		// Also handle items if it's an array of schemas
+		if itemsArray, ok := cleanedMap["items"].([]interface{}); ok {
+			cleanedItemsArray := make([]interface{}, len(itemsArray))
+			for i, item := range itemsArray {
+				cleanedItemsArray[i] = cleanFunctionParameters(item)
 			}
-			cleanedMap[field] = cleanedNested
+			cleanedMap["items"] = cleanedItemsArray
 		}
-	}
 
-	return cleanedMap
+		// Recursively clean other schema composition keywords
+		for _, field := range []string{"allOf", "anyOf", "oneOf"} {
+			if nested, ok := cleanedMap[field].([]interface{}); ok {
+				cleanedNested := make([]interface{}, len(nested))
+				for i, item := range nested {
+					cleanedNested[i] = cleanFunctionParameters(item)
+				}
+				cleanedMap[field] = cleanedNested
+			}
+		}
+
+		// Recursively clean patternProperties
+		if patternProps, ok := cleanedMap["patternProperties"].(map[string]interface{}); ok {
+			cleanedPatternProps := make(map[string]interface{})
+			for pattern, schema := range patternProps {
+				cleanedPatternProps[pattern] = cleanFunctionParameters(schema)
+			}
+			cleanedMap["patternProperties"] = cleanedPatternProps
+		}
+
+		// Recursively clean definitions
+		if definitions, ok := cleanedMap["definitions"].(map[string]interface{}); ok {
+			cleanedDefinitions := make(map[string]interface{})
+			for defName, defSchema := range definitions {
+				cleanedDefinitions[defName] = cleanFunctionParameters(defSchema)
+			}
+			cleanedMap["definitions"] = cleanedDefinitions
+		}
+
+		// Recursively clean $defs (newer JSON Schema draft)
+		if defs, ok := cleanedMap["$defs"].(map[string]interface{}); ok {
+			cleanedDefs := make(map[string]interface{})
+			for defName, defSchema := range defs {
+				cleanedDefs[defName] = cleanFunctionParameters(defSchema)
+			}
+			cleanedMap["$defs"] = cleanedDefs
+		}
+
+		// Clean conditional keywords
+		for _, field := range []string{"if", "then", "else", "not"} {
+			if nested, ok := cleanedMap[field]; ok {
+				cleanedMap[field] = cleanFunctionParameters(nested)
+			}
+		}
+
+		return cleanedMap
+
+	case []interface{}:
+		// Handle arrays of schemas
+		cleanedArray := make([]interface{}, len(v))
+		for i, item := range v {
+			cleanedArray[i] = cleanFunctionParameters(item)
+		}
+		return cleanedArray
+
+	default:
+		// Not a map or array, return as is (e.g., could be a primitive)
+		return params
+	}
 }
 
 func removeAdditionalPropertiesWithDepth(schema interface{}, depth int) interface{} {
@@ -527,6 +568,8 @@ func responseGeminiChat2OpenAI(response *GeminiChatResponse) *dto.OpenAITextResp
 					if call := getResponseToolCall(&part); call != nil {
 						toolCalls = append(toolCalls, *call)
 					}
+				} else if part.Thought {
+					choice.Message.ReasoningContent = part.Text
 				} else {
 					if part.ExecutableCode != nil {
 						texts = append(texts, "```"+part.ExecutableCode.Language+"\n"+part.ExecutableCode.Code+"\n```")
@@ -584,6 +627,7 @@ func streamResponseGeminiChat2OpenAI(geminiResponse *GeminiChatResponse) (*dto.C
 		}
 		var texts []string
 		isTools := false
+		isThought := false
 		if candidate.FinishReason != nil {
 			// p := GeminiConvertFinishReason(*candidate.FinishReason)
 			switch *candidate.FinishReason {
@@ -608,6 +652,9 @@ func streamResponseGeminiChat2OpenAI(geminiResponse *GeminiChatResponse) (*dto.C
 					call.SetIndex(len(choice.Delta.ToolCalls))
 					choice.Delta.ToolCalls = append(choice.Delta.ToolCalls, *call)
 				}
+			} else if part.Thought {
+				isThought = true
+				texts = append(texts, part.Text)
 			} else {
 				if part.ExecutableCode != nil {
 					texts = append(texts, "```"+part.ExecutableCode.Language+"\n"+part.ExecutableCode.Code+"\n```\n")
@@ -620,7 +667,11 @@ func streamResponseGeminiChat2OpenAI(geminiResponse *GeminiChatResponse) (*dto.C
 				}
 			}
 		}
-		choice.Delta.SetContentString(strings.Join(texts, "\n"))
+		if isThought {
+			choice.Delta.SetReasoningContent(strings.Join(texts, "\n"))
+		} else {
+			choice.Delta.SetContentString(strings.Join(texts, "\n"))
+		}
 		if isTools {
 			choice.FinishReason = &constant.FinishReasonToolCalls
 		}
