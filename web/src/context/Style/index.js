@@ -59,10 +59,10 @@ export const StyleProvider = ({ children }) => {
   const location = useLocation();
 
   // 需要隐藏侧边栏的路径
-  const hideSiderPaths = ['/login', '/register', '/404', '/chat', '/home', '/playground'];
+  const hideSiderPaths = ['/login', '/register', '/404', '/chat', '/home', '/user/reset'];
   
   // 需要强制显示侧边栏的路径
-  const forceSiderPaths = ['/detail', '/user', '/channel', '/token', '/redemption', '/topup', '/log', '/midjourney', '/task', '/setting'];
+  const forceSiderPaths = ['/detail', '/user', '/channel', '/token', '/redemption', '/topup', '/log', '/midjourney', '/task', '/setting', '/playground'];
 
   useEffect(() => {
     // 监听窗口大小变化

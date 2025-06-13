@@ -13,17 +13,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetWebRouter(router *gin.Engine, buildFS embed.FS, indexPage []byte) {
+func SetWebRouter(router *gin.Engine, buildFS embed.FS, indexPage []byte, devMode bool) {
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
 	router.Use(middleware.GlobalWebRateLimit())
 	router.Use(middleware.Cache())
-	router.Use(static.Serve("/", common.EmbedFolder(buildFS, "web/dist")))
-
-	// 添加直接处理HTML文件的路由
-	router.GET("/cache-cleaner.html", func(c *gin.Context) {
-		c.Header("Cache-Control", "no-cache")
-		c.File("web/dist/cache-cleaner.html")
-	})
+	
+	// 在开发模式下，从文件系统读取前端文件
+	if devMode {
+		router.Use(static.Serve("/", static.LocalFile("web/dist", false)))
+		common.SysLog("serving frontend files from filesystem in development mode")
+	} else {
+		// 生产模式下，使用嵌入式文件系统
+		router.Use(static.Serve("/", common.EmbedFolder(buildFS, "web/dist")))
+	}
 
 	router.NoRoute(func(c *gin.Context) {
 		if strings.HasPrefix(c.Request.RequestURI, "/v1") || strings.HasPrefix(c.Request.RequestURI, "/api") || strings.HasPrefix(c.Request.RequestURI, "/assets") {
@@ -31,6 +33,12 @@ func SetWebRouter(router *gin.Engine, buildFS embed.FS, indexPage []byte) {
 			return
 		}
 		c.Header("Cache-Control", "no-cache")
-		c.Data(http.StatusOK, "text/html; charset=utf-8", indexPage)
+		if devMode {
+			// 开发模式下，从文件系统读取 index.html
+			c.File("web/dist/index.html")
+		} else {
+			// 生产模式下，使用嵌入式 index.html
+			c.Data(http.StatusOK, "text/html; charset=utf-8", indexPage)
+		}
 	})
 }

@@ -30,6 +30,33 @@ export default defineConfig({
       },
     },
   },
+  server: {
+    hmr: {
+      overlay: false,
+    },
+    watch: {
+      usePolling: true,
+      interval: 100,
+    },
+    headers: {
+      'Cache-Control': 'no-store',
+    },
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/v1': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/dashboard': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
+    port: 5173,
+  },
   build: {
     rollupOptions: {
       output: {
@@ -37,46 +64,12 @@ export default defineConfig({
         entryFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
         chunkFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
         assetFileNames: `assets/[name]-[hash]-${Date.now()}.[ext]`,
-        manualChunks: {
-          'react-core': ['react', 'react-dom', 'react-router-dom'],
-          'semi-ui': ['@douyinfe/semi-icons', '@douyinfe/semi-ui'],
-          semantic: ['semantic-ui-offline', 'semantic-ui-react'],
-          visactor: ['@visactor/react-vchart', '@visactor/vchart'],
-          tools: ['axios', 'history', 'marked'],
-          'react-components': [
-            'react-dropzone',
-            'react-fireworks',
-            'react-telegram-login',
-            'react-toastify',
-            'react-turnstile',
-          ],
-          i18n: [
-            'i18next',
-            'react-i18next',
-            'i18next-browser-languagedetector',
-          ],
-        },
       },
     },
+    // 禁用代码压缩以便于调试
+    minify: false,
   },
-  server: {
-    host: '0.0.0.0',
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        secure: false
-      },
-      '/pg': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        secure: false
-      },
-      '/v1': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        secure: false
-      }
-    },
+  resolve: {
+    extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json'],
   },
 });

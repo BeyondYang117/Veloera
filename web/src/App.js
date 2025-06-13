@@ -156,6 +156,18 @@ const routing = [
     element: <Auth />,
   },
   {
+    path: '/oauth/github',
+    element: <OAuth2Callback type="github" />,
+  },
+  {
+    path: '/oauth/oidc',
+    element: <OAuth2Callback type="oidc" />,
+  },
+  {
+    path: '/oauth/linuxdo',
+    element: <OAuth2Callback type="linuxdo" />,
+  },
+  {
     path: '/',
     element: <Home />,
   },

@@ -14,6 +14,7 @@ import (
 	"veloera/model"
 	"veloera/router"
 	"veloera/service"
+	"veloera/setting"
 	"veloera/setting/operation_setting"
 
 	"github.com/bytedance/gopkg/util/gopool"
@@ -47,6 +48,13 @@ func main() {
 	if common.DebugEnabled {
 		common.SysLog("running in debug mode")
 	}
+	
+	// 判断是否为开发模式
+	devMode := os.Getenv("DEV_MODE") == "true"
+	if devMode {
+		common.SysLog("running in development mode, frontend files will be served from filesystem")
+	}
+	
 	// Initialize SQL Database
 	err = model.InitDB()
 	if err != nil {
@@ -79,6 +87,10 @@ func main() {
 	constant.InitEnv()
 	// Initialize options
 	model.InitOptionMap()
+	// 初始化OAuth配置
+	common.InitConfig()
+	// 加载AI小助手设置
+	setting.LoadAssistantSettings()
 
 	if common.RedisEnabled {
 		// for compatibility with old versions
@@ -161,7 +173,7 @@ func main() {
 	})
 	server.Use(sessions.Sessions("session", store))
 
-	router.SetRouter(server, buildFS, indexPage)
+	router.SetRouter(server, buildFS, indexPage, devMode)
 	var port = os.Getenv("PORT")
 	if port == "" {
 		port = strconv.Itoa(*common.Port)

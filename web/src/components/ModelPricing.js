@@ -279,6 +279,13 @@ const ModelPricing = () => {
   const [usableGroup, setUsableGroup] = useState({});
 
   const setModelsFormat = (models, groupRatio) => {
+    // 添加对models的空值检查
+    if (!models || !Array.isArray(models)) {
+      console.warn('Models data is null, undefined, or not an array');
+      setModels([]);
+      return;
+    }
+    
     for (let i = 0; i < models.length; i++) {
       models[i].key = models[i].model_name;
       models[i].group_ratio = groupRatio[models[i].model_name];
@@ -308,19 +315,44 @@ const ModelPricing = () => {
   const loadPricing = async () => {
     setLoading(true);
 
-    let url = '';
-    url = `/api/pricing`;
-    const res = await API.get(url);
-    const { success, message, data, group_ratio, usable_group } = res.data;
-    if (success) {
-      setGroupRatio(group_ratio);
-      setUsableGroup(usable_group);
-      setSelectedGroup(userState.user ? userState.user.group : 'default');
-      setModelsFormat(data, group_ratio);
-    } else {
-      showError(message);
+    try {
+      let url = `/api/pricing`;
+      const res = await API.get(url);
+      const { success, message, data, group_ratio, usable_group } = res.data;
+      
+      if (success) {
+        // 确保group_ratio是有效对象
+        const safeGroupRatio = group_ratio || {};
+        setGroupRatio(safeGroupRatio);
+        
+        // 确保usable_group是有效对象
+        const safeUsableGroup = usable_group || {};
+        setUsableGroup(safeUsableGroup);
+        
+        // 设置选中的组，确保userState.user存在
+        const defaultGroup = userState.user && userState.user.group ? userState.user.group : 'default';
+        setSelectedGroup(defaultGroup);
+        
+        // 确保data是有效数组
+        const safeData = Array.isArray(data) ? data : [];
+        setModelsFormat(safeData, safeGroupRatio);
+      } else {
+        showError(message || '获取定价数据失败');
+        // 确保在失败时也设置默认值，避免UI错误
+        setGroupRatio({});
+        setUsableGroup({});
+        setModels([]);
+      }
+    } catch (error) {
+      console.error('Error loading pricing data:', error);
+      showError('加载定价数据时出错');
+      // 确保在出错时也设置默认值，避免UI错误
+      setGroupRatio({});
+      setUsableGroup({});
+      setModels([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const refresh = async () => {

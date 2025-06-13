@@ -69,6 +69,11 @@ func InitOptionMap() {
 	common.OptionMap["Footer"] = common.Footer
 	common.OptionMap["SystemName"] = common.SystemName
 	common.OptionMap["Logo"] = common.Logo
+	common.OptionMap["QQGroupQRCode"] = "/images/contact-qr.png"
+	common.OptionMap["CustomerServiceQRCode"] = "/images/contact-qr.png"
+	common.OptionMap["CustomerServiceQQ"] = common.CustomerServiceQQ
+	common.OptionMap["QQGroupLink"] = common.QQGroupLink
+	common.OptionMap["ContactEmail"] = common.ContactEmail
 	common.OptionMap["ServerAddress"] = ""
 	common.OptionMap["WorkerUrl"] = setting.WorkerUrl
 	common.OptionMap["WorkerValidKey"] = setting.WorkerValidKey
@@ -125,6 +130,9 @@ func InitOptionMap() {
 	common.OptionMap["SensitiveWords"] = setting.SensitiveWordsToString()
 	common.OptionMap["StreamCacheQueueLength"] = strconv.Itoa(setting.StreamCacheQueueLength)
 	common.OptionMap["AutomaticDisableKeywords"] = operation_setting.AutomaticDisableKeywordsToString()
+	
+	// 添加AI小助手设置
+	common.OptionMap["AssistantSettings"] = setting.AssistantSettings2JSONString()
 
 	// 自动添加所有注册的模型配置
 	modelConfigs := config.GlobalConfig.ExportAllConfigs()
@@ -194,6 +202,13 @@ func updateOptionMap(key string, value string) (err error) {
 			common.ImageDownloadPermission = intValue
 		}
 	}
+	
+	// 处理AI小助手设置
+	if key == "AssistantSettings" {
+		setting.LoadAssistantSettings()
+		return nil
+	}
+	
 	if strings.HasSuffix(key, "Enabled") || key == "DefaultCollapseSidebar" {
 		boolValue := value == "true"
 		switch key {
@@ -309,18 +324,36 @@ func updateOptionMap(key string, value string) (err error) {
 		err = common.UpdateTopupGroupRatioByJSONString(value)
 	case "GitHubClientId":
 		common.GitHubClientId = value
+		// 保存OAuth配置到文件
+		common.SaveOAuthConfig()
 	case "GitHubClientSecret":
 		common.GitHubClientSecret = value
+		// 保存OAuth配置到文件
+		common.SaveOAuthConfig()
 	case "LinuxDOClientId":
 		common.LinuxDOClientId = value
+		// 保存OAuth配置到文件
+		common.SaveOAuthConfig()
 	case "LinuxDOClientSecret":
 		common.LinuxDOClientSecret = value
+		// 保存OAuth配置到文件
+		common.SaveOAuthConfig()
 	case "Footer":
 		common.Footer = value
 	case "SystemName":
 		common.SystemName = value
 	case "Logo":
 		common.Logo = value
+	case "QQGroupQRCode":
+		common.QQGroupQRCode = value
+	case "CustomerServiceQRCode":
+		common.CustomerServiceQRCode = value
+	case "CustomerServiceQQ":
+		common.CustomerServiceQQ = value
+	case "QQGroupLink":
+		common.QQGroupLink = value
+	case "ContactEmail":
+		common.ContactEmail = value
 	case "WeChatServerAddress":
 		common.WeChatServerAddress = value
 	case "WeChatServerToken":

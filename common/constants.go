@@ -14,6 +14,11 @@ var Version = "v0.0.0"            // this hard coding will be replaced automatic
 var SystemName = "Veloera"
 var Footer = ""
 var Logo = ""
+var QQGroupQRCode = "/images/contact-qr.png"
+var CustomerServiceQRCode = "/images/contact-qr.png"
+var CustomerServiceQQ = "87448221"
+var QQGroupLink = "https://qm.qq.com/q/LhNaE5GskQ"
+var ContactEmail = "support@bigaipro.com"
 var TopUpLink = ""
 
 // var ChatLink = ""

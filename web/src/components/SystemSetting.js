@@ -19,6 +19,7 @@ import {
   verifyJSON,
 } from '../helpers/utils';
 import { API } from '../helpers/api';
+import AssistantSetting from './AssistantSetting';
 
 const SystemSetting = () => {
   let [inputs, setInputs] = useState({
@@ -735,7 +736,7 @@ const SystemSetting = () => {
                         允许通过 Telegram 进行登录
                       </Form.Checkbox>
                       <Form.Checkbox
-                        field="['oidc.enabled']"
+                        field="oidc.enabled"
                         noLabel
                         onChange={(e) =>
                           handleCheckboxChange('oidc.enabled', e)
@@ -1088,6 +1089,12 @@ const SystemSetting = () => {
                     </Col>
                   </Row>
                   <Button onClick={submitTurnstile}>保存 Turnstile 设置</Button>
+                </Form.Section>
+              </Card>
+
+              <Card>
+                <Form.Section text='AI小助手设置'>
+                  <AssistantSetting />
                 </Form.Section>
               </Card>
 

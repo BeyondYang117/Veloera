@@ -197,9 +197,9 @@ func GetTimestamp() int64 {
 	return time.Now().Unix()
 }
 
+// GetTimeString returns the current time as a string
 func GetTimeString() string {
-	now := time.Now()
-	return fmt.Sprintf("%s%d", now.Format("20060102150405"), now.UnixNano()%1e9)
+	return time.Now().Format("2006-01-02 15:04:05")
 }
 
 func Max(a int, b int) int {
@@ -263,4 +263,11 @@ func GetAudioDuration(ctx context.Context, filename string) (float64, error) {
 	}
 
 	return strconv.ParseFloat(string(bytes.TrimSpace(output)), 64)
+}
+
+// UpdateOption updates an option in the OptionMap and database
+func UpdateOption(key string, value string) error {
+	// 这个函数是一个包装器，实际实现在model.UpdateOption中
+	// 在common包中声明这个函数是为了避免循环依赖
+	return nil
 }

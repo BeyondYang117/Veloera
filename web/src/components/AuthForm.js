@@ -399,7 +399,7 @@ const AuthForm = ({ mode, onModeChange }) => {
               </Text>
               <Text
                 link
-                onClick={() => navigate('/reset')}
+                onClick={() => navigate('/user/reset')}
                 style={darkModeStyles.formLink}
               >
                 {t('忘记密码')}
@@ -433,7 +433,7 @@ const AuthForm = ({ mode, onModeChange }) => {
                   icon={<IconGithubLogo size='large' />}
                   theme='borderless'
                   style={{ padding: '8px 16px', ...darkModeStyles.oauthButton }}
-                  onClick={onGitHubOAuthClicked}
+                  onClick={() => onGitHubOAuthClicked(status.github_client_id)}
                 >
                   {t('GitHub 登录')}
                 </Button>
@@ -455,7 +455,7 @@ const AuthForm = ({ mode, onModeChange }) => {
                 icon={<LinuxDoIcon />}
                   theme='borderless'
                   style={{ padding: '8px 16px', ...darkModeStyles.oauthButton }}
-                  onClick={onLinuxDOOAuthClicked}
+                  onClick={() => onLinuxDOOAuthClicked(status.linuxdo_client_id)}
                 >
                   {t('Linux Do 登录')}
                 </Button>

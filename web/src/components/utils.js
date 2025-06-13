@@ -44,7 +44,17 @@ export async function onGitHubOAuthClicked(github_client_id, openInNewTab = fals
 export async function onLinuxDOOAuthClicked(linuxdo_client_id, openInNewTab = false) {
   const state = await getOAuthState();
   if (!state) return;
-  const url = `https://connect.linux.do/oauth2/authorize?response_type=code&client_id=${linuxdo_client_id}&state=${state}`;
+  
+  // 确保客户端ID是字符串
+  const clientId = typeof linuxdo_client_id === 'string' ? linuxdo_client_id : '';
+  
+  // 检查客户端ID是否为空或无效
+  if (!clientId) {
+    showError('LinuxDO OAuth客户端ID未配置或无效');
+    return;
+  }
+  
+  const url = `https://connect.linux.do/oauth2/authorize?response_type=code&client_id=${clientId}&state=${state}`;
   if (openInNewTab) {
     window.open(url);
   } else {

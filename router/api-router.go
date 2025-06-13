@@ -164,5 +164,11 @@ func SetApiRouter(router *gin.Engine) {
 			taskRoute.GET("/self", middleware.UserAuth(), controller.GetUserTask)
 			taskRoute.GET("/", middleware.AdminAuth(), controller.GetAllTask)
 		}
+		
+		// AI小助手路由
+		assistantRoute := apiRouter.Group("/chat/assistant")
+		{
+			assistantRoute.POST("", controller.ChatAssistant)
+		}
 	}
 }

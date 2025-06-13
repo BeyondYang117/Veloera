@@ -25,17 +25,15 @@ import './i18n/i18n.js';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const { Sider, Content, Header, Footer } = Layout;
 root.render(
-  <React.StrictMode>
-    <StatusProvider>
-      <UserProvider>
-        <BrowserRouter>
-          <ThemeProvider>
-            <StyleProvider>
-              <PageLayout />
-            </StyleProvider>
-          </ThemeProvider>
-        </BrowserRouter>
-      </UserProvider>
-    </StatusProvider>
-  </React.StrictMode>,
+  <StatusProvider>
+    <UserProvider>
+      <BrowserRouter>
+        <ThemeProvider>
+          <StyleProvider>
+            <PageLayout />
+          </StyleProvider>
+        </ThemeProvider>
+      </BrowserRouter>
+    </UserProvider>
+  </StatusProvider>
 );

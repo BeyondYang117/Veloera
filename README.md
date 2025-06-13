@@ -13,6 +13,10 @@
 原汁原味的 New API 体验, 对界面无大改动, 遵循 Apache 2.0 协议, 无商用限制, 承诺不变质.  
 添加极多原版不计划添加的特性. 以下只是部分.  
 
+## 最新版本
+
+**v0.0.2** - 修复了OAuth登录问题，支持配置持久化。详细更新内容请查看 [VERSION_HISTORY.md](VERSION_HISTORY.md)。
+
 ## 特性
 
 - 支持以 `,` 分割的单渠道多 Key, 随机选取.
@@ -26,6 +30,7 @@
 - 当没有聊天链接可用时, 不显示聊天按钮
 - 空回复不计费
 - 在日志表增加总/输入/输出 Tokens
+- OAuth登录配置持久化（v0.0.2新增）
 - 还有更多...
 
 ## 迁移
@@ -41,7 +46,7 @@
 ## 部署
 
 > [!TIP]
-> 最新版 Docker 镜像：`ghcr.io/veloera/veloera:latest`
+> 最新版 Docker 镜像：`abu116/big-api:v0.0.2-amd64`
 
 ### docker-compose
 
@@ -61,8 +66,20 @@ nano docker-compose.yml
 3. 启动服务
 
 ```shell
-docker-compose up -d
+./start.sh
 ```
+
+### 构建自己的镜像
+
+如果您想构建自己的镜像，可以使用以下命令：
+
+```shell
+./build-v0.0.2-amd64.sh
+```
+
+## OAuth登录配置
+
+从v0.0.2版本开始，支持OAuth登录配置持久化。详细配置方法请参考 [OAUTH_README.md](OAUTH_README.md)。
 
 ## 环境变量
 
@@ -80,6 +97,7 @@ docker-compose up -d
 - `AZURE_DEFAULT_API_VERSION`：Azure 渠道默认 API 版本，默认 `2024-12-01-preview`
 - `NOTIFICATION_LIMIT_DURATION_MINUTE`：通知限制持续时间，默认 `10`分钟
 - `NOTIFY_LIMIT_COUNT`：用户通知在指定持续时间内的最大数量，默认 `2`
+- `CONFIG_FILE_PATH`：配置文件路径，默认为 `/app/config/oauth.json`（v0.0.2新增）
 
 ## 🌟 Star History
 

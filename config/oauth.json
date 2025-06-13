@@ -1,0 +1,8 @@
+{
+  "LinuxDOOAuthEnabled": true,
+  "LinuxDOClientId": "yJ3iJ6WxItaUZHAkMaC55hnV0fx9Y2Q2",
+  "LinuxDOClientSecret": "5uXDmCXrRvkEx7RewPzTzUGmVJTwiyda",
+  "GitHubOAuthEnabled": true,
+  "GitHubClientId": "",
+  "GitHubClientSecret": ""
+} 

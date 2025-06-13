@@ -1,14 +1,24 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import { getSystemName } from '../../helpers';
 import { useTheme } from '../../context/Theme';
 import { StyleContext } from '../../context/Style';
 import '../../index.css';
+import { API } from '../../helpers';
 
 const Contact = () => {
   const systemName = getSystemName();
   const theme = useTheme();
   const isDarkMode = theme === 'dark';
   const [styleState, styleDispatch] = useContext(StyleContext);
+  const [qrCodes, setQrCodes] = useState({
+    qqGroup: 'https://blog.macsoft.fun/bigaipro/qqqlbigaipro.png',
+    customerService: 'https://blog.macsoft.fun/bigaipro/87448221.png'
+  });
+  const [contactInfo, setContactInfo] = useState({
+    customerServiceQQ: '87448221',
+    qqGroupLink: 'https://qm.qq.com/q/LhNaE5GskQ',
+    contactEmail: 'support@bigaipro.com'
+  });
 
   // 组件挂载后执行初始化
   useEffect(() => {
@@ -18,22 +28,52 @@ const Contact = () => {
     // 强制隐藏侧边栏，实现全屏显示
     styleDispatch({ type: 'SET_SIDER', payload: false });
     
+    // 获取二维码配置
+    fetchQRCodeSettings();
+    
     // 组件卸载时的清理函数
     return () => {
       // 可以在这里重置侧边栏状态，如果需要的话
     };
   }, [systemName, styleDispatch]);
 
+  // 获取二维码配置
+  const fetchQRCodeSettings = async () => {
+    try {
+      // 添加时间戳参数，避免浏览器缓存
+      const timestamp = new Date().getTime();
+      const res = await API.get(`/api/option/?_t=${timestamp}`);
+      const { success, message, data } = res.data;
+      if (success) {
+        const options = {};
+        data.forEach(item => {
+          options[item.key] = item.value;
+        });
+        
+        setQrCodes({
+          qqGroup: options.QQGroupQRCode || 'https://blog.macsoft.fun/bigaipro/qqqlbigaipro.png',
+          customerService: options.CustomerServiceQRCode || 'https://blog.macsoft.fun/bigaipro/87448221.png'
+        });
+        
+        setContactInfo({
+          customerServiceQQ: options.CustomerServiceQQ || '87448221',
+          qqGroupLink: options.QQGroupLink || 'https://qm.qq.com/q/LhNaE5GskQ',
+          contactEmail: options.ContactEmail || 'support@bigaipro.com'
+        });
+      }
+    } catch (error) {
+      console.error('获取配置失败', error);
+    }
+  };
+
   // 复制QQ号到剪贴板
   const copyQQ = () => {
-    const qq = '87448221';
-    copyToClipboard(qq, 'QQ号已复制到剪贴板！');
+    copyToClipboard(contactInfo.customerServiceQQ, 'QQ号已复制到剪贴板！');
   };
 
   // 复制邮箱到剪贴板
   const copyEmail = () => {
-    const email = 'support@bigaipro.com';
-    copyToClipboard(email, '邮箱地址已复制到剪贴板！');
+    copyToClipboard(contactInfo.contactEmail, '邮箱地址已复制到剪贴板！');
   };
 
   // 通用复制功能
@@ -272,12 +312,38 @@ const Contact = () => {
     },
   };
 
+  // 手动刷新配置
+  const handleRefresh = () => {
+    fetchQRCodeSettings();
+    // 显示刷新成功提示
+    showSuccessMessage('配置已刷新');
+  };
+  
   return (
     <div style={themeStyles.rootStyle}>
       <div style={themeStyles.container}>
         <div style={themeStyles.brandTitle}>
           <div style={themeStyles.brandLogo}>{systemName} API</div>
           <p style={themeStyles.brandSubtitle}>高效可靠的API转发服务，为您提供专业稳定的技术支持</p>
+          <button 
+            onClick={handleRefresh}
+            style={{
+              background: '#1a73e8',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              marginTop: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '5px'
+            }}
+          >
+            <i className="fas fa-sync-alt"></i>刷新配置
+          </button>
         </div>
         
         <div style={themeStyles.contactGrid}>
@@ -288,7 +354,7 @@ const Contact = () => {
             </h2>
             <div style={themeStyles.qrWrapper}>
               <img 
-                src="/contact-qr.png" 
+                src={qrCodes.qqGroup} 
                 alt="QQ群二维码" 
                 style={themeStyles.qrImage}
                 loading="lazy"
@@ -296,7 +362,7 @@ const Contact = () => {
             </div>
             <p style={themeStyles.description}>加入我们的技术交流群，与开发者共同探讨</p>
             <a 
-              href="https://qm.qq.com/q/LhNaE5GskQ" 
+              href={contactInfo.qqGroupLink} 
               target="_blank" 
               rel="noopener noreferrer"
               style={themeStyles.qqButton}
@@ -317,7 +383,7 @@ const Contact = () => {
             </h2>
             <div style={themeStyles.qrWrapper}>
               <img 
-                src="/contact-qr.png" 
+                src={qrCodes.customerService} 
                 alt="客服二维码" 
                 style={themeStyles.qrImage}
                 loading="lazy"
@@ -325,7 +391,7 @@ const Contact = () => {
             </div>
             <p style={themeStyles.description}>专业的客服团队，为您提供贴心服务</p>
             <div style={themeStyles.qqInfo}>
-              <span>客服QQ：87448221</span>
+              <span>客服QQ：{contactInfo.customerServiceQQ}</span>
               <button style={themeStyles.copyButton} onClick={copyQQ}>
                 <i className="fas fa-copy"></i>复制
               </button>
@@ -344,7 +410,7 @@ const Contact = () => {
             </h2>
             <i className="fas fa-envelope" style={themeStyles.emailIcon}></i>
             <p style={themeStyles.description}>发送邮件给我们</p>
-            <div style={themeStyles.emailAddress}>support@bigaipro.com</div>
+            <div style={themeStyles.emailAddress}>{contactInfo.contactEmail}</div>
             <button style={themeStyles.qqButton} onClick={copyEmail}>
               <i className="fas fa-copy"></i>复制邮箱地址
             </button>

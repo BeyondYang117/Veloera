@@ -24,6 +24,11 @@ const OtherSetting = () => {
     Footer: '',
     About: '',
     HomePageContent: '',
+    QQGroupQRCode: '',
+    CustomerServiceQRCode: '',
+    CustomerServiceQQ: '',
+    QQGroupLink: '',
+    ContactEmail: '',
   });
   let [loading, setLoading] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -56,6 +61,11 @@ const OtherSetting = () => {
     About: false,
     Footer: false,
     CheckUpdate: false,
+    QQGroupQRCode: false,
+    CustomerServiceQRCode: false,
+    CustomerServiceQQ: false,
+    QQGroupLink: false,
+    ContactEmail: false,
   });
   const handleInputChange = async (value, e) => {
     const name = e.target.id;
@@ -158,6 +168,86 @@ const OtherSetting = () => {
     }
   };
 
+  // 个性化设置 - QQ群二维码
+  const submitQQGroupQRCode = async () => {
+    try {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, QQGroupQRCode: true }));
+      await updateOption('QQGroupQRCode', inputs.QQGroupQRCode);
+      showSuccess('QQ群二维码已更新');
+      // 更新成功后立即刷新配置
+      await getOptions();
+    } catch (error) {
+      console.error('QQ群二维码更新失败', error);
+      showError('QQ群二维码更新失败');
+    } finally {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, QQGroupQRCode: false }));
+    }
+  };
+
+  // 个性化设置 - 客服二维码
+  const submitCustomerServiceQRCode = async () => {
+    try {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, CustomerServiceQRCode: true }));
+      await updateOption('CustomerServiceQRCode', inputs.CustomerServiceQRCode);
+      showSuccess('客服二维码已更新');
+      // 更新成功后立即刷新配置
+      await getOptions();
+    } catch (error) {
+      console.error('客服二维码更新失败', error);
+      showError('客服二维码更新失败');
+    } finally {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, CustomerServiceQRCode: false }));
+    }
+  };
+
+  // 个性化设置 - 客服QQ
+  const submitCustomerServiceQQ = async () => {
+    try {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, CustomerServiceQQ: true }));
+      await updateOption('CustomerServiceQQ', inputs.CustomerServiceQQ);
+      showSuccess('客服QQ已更新');
+      // 更新成功后立即刷新配置
+      await getOptions();
+    } catch (error) {
+      console.error('客服QQ更新失败', error);
+      showError('客服QQ更新失败');
+    } finally {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, CustomerServiceQQ: false }));
+    }
+  };
+
+  // 个性化设置 - QQ群链接
+  const submitQQGroupLink = async () => {
+    try {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, QQGroupLink: true }));
+      await updateOption('QQGroupLink', inputs.QQGroupLink);
+      showSuccess('QQ群链接已更新');
+      // 更新成功后立即刷新配置
+      await getOptions();
+    } catch (error) {
+      console.error('QQ群链接更新失败', error);
+      showError('QQ群链接更新失败');
+    } finally {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, QQGroupLink: false }));
+    }
+  };
+
+  // 个性化设置 - 联系邮箱
+  const submitContactEmail = async () => {
+    try {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, ContactEmail: true }));
+      await updateOption('ContactEmail', inputs.ContactEmail);
+      showSuccess('联系邮箱已更新');
+      // 更新成功后立即刷新配置
+      await getOptions();
+    } catch (error) {
+      console.error('联系邮箱更新失败', error);
+      showError('联系邮箱更新失败');
+    } finally {
+      setLoadingInput((loadingInput) => ({ ...loadingInput, ContactEmail: false }));
+    }
+  };
+
   const checkUpdate = async () => {
     try {
       setLoadingInput((loadingInput) => ({
@@ -209,7 +299,9 @@ const OtherSetting = () => {
     }
   };
   const getOptions = async () => {
-    const res = await API.get('/api/option/');
+    // 添加时间戳参数，避免浏览器缓存
+    const timestamp = new Date().getTime();
+    const res = await API.get(`/api/option/?_t=${timestamp}`);
     const { success, message, data } = res.data;
     if (success) {
       let newInputs = {};
@@ -385,6 +477,56 @@ const OtherSetting = () => {
               />
               <Button onClick={submitFooter} loading={loadingInput['Footer']}>
                 {t('设置页脚')}
+              </Button>
+              
+              <Form.Input
+                label={t('QQ群二维码图片地址')}
+                placeholder={t('在此输入QQ群二维码图片地址，建议尺寸为220x220像素')}
+                field={'QQGroupQRCode'}
+                onChange={handleInputChange}
+              />
+              <Button onClick={submitQQGroupQRCode} loading={loadingInput['QQGroupQRCode']}>
+                {t('设置QQ群二维码')}
+              </Button>
+              
+              <Form.Input
+                label={t('客服二维码图片地址')}
+                placeholder={t('在此输入客服二维码图片地址，建议尺寸为220x220像素')}
+                field={'CustomerServiceQRCode'}
+                onChange={handleInputChange}
+              />
+              <Button onClick={submitCustomerServiceQRCode} loading={loadingInput['CustomerServiceQRCode']}>
+                {t('设置客服二维码')}
+              </Button>
+              
+              <Form.Input
+                label={t('客服QQ')}
+                placeholder={t('在此输入客服QQ号码')}
+                field={'CustomerServiceQQ'}
+                onChange={handleInputChange}
+              />
+              <Button onClick={submitCustomerServiceQQ} loading={loadingInput['CustomerServiceQQ']}>
+                {t('设置客服QQ')}
+              </Button>
+              
+              <Form.Input
+                label={t('QQ群链接')}
+                placeholder={t('在此输入QQ群链接，例如：https://qm.qq.com/q/xxx')}
+                field={'QQGroupLink'}
+                onChange={handleInputChange}
+              />
+              <Button onClick={submitQQGroupLink} loading={loadingInput['QQGroupLink']}>
+                {t('设置QQ群链接')}
+              </Button>
+              
+              <Form.Input
+                label={t('联系邮箱')}
+                placeholder={t('在此输入联系邮箱地址')}
+                field={'ContactEmail'}
+                onChange={handleInputChange}
+              />
+              <Button onClick={submitContactEmail} loading={loadingInput['ContactEmail']}>
+                {t('设置联系邮箱')}
               </Button>
             </Form.Section>
           </Card>
