@@ -11,6 +11,9 @@ import {
   Row,
   Spin,
   Tabs,
+  Space,
+  Tooltip,
+  Typography,
 } from '@douyinfe/semi-ui';
 import { VChart } from '@visactor/react-vchart';
 import {
@@ -32,6 +35,10 @@ import {
 import { UserContext } from '../../context/User/index.js';
 import { StyleContext } from '../../context/Style/index.js';
 import { useTranslation } from 'react-i18next';
+import { IconHelpCircle, IconRefresh } from '@douyinfe/semi-icons';
+import dayjs from 'dayjs';
+
+const { Text } = Typography;
 
 const Detail = (props) => {
   const { t } = useTranslation();
@@ -395,18 +402,52 @@ const Detail = (props) => {
     setConsumeTokens(totalTokens);
   };
 
+  // 强制显示侧边栏函数
+  const forceSiderDisplay = () => {
+    // 确保侧边栏在控制台页面始终显示
+    styleDispatch({ type: 'SET_SIDER', payload: true });
+    try {
+      localStorage.setItem('forceShowSider', 'true');
+    } catch (e) {
+      console.log('localStorage error:', e);
+    }
+  };
+
   const getUserData = async () => {
-    let res = await API.get(`/api/user/self`);
-    const { success, message, data } = res.data;
-    if (success) {
-      userDispatch({ type: 'login', payload: data });
-    } else {
-      showError(message);
+    // 确保侧边栏在控制台页面始终显示
+    forceSiderDisplay();
+    
+    try {
+      let res = await API.get(`/api/user/self`);
+      const { success, message, data } = res.data;
+      if (success) {
+        userDispatch({ type: 'login', payload: data });
+      } else {
+        showError(message);
+      }
+    } finally {
+      // ... existing code ...
     }
   };
 
   useEffect(() => {
+    // 确保侧边栏在控制台页面始终显示
+    forceSiderDisplay();
+    
+    // 添加页面卸载事件监听，确保离开页面时不会影响侧边栏状态
+    const handleBeforeUnload = () => {
+      try {
+        localStorage.setItem('forceShowSider', 'true');
+      } catch (e) {
+        console.log('localStorage error:', e);
+      }
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
     getUserData();
+    
+    // 初始化图表主题
     if (!initialized.current) {
       initVChartSemiTheme({
         isWatchingThemeSwitch: true,
@@ -414,6 +455,28 @@ const Detail = (props) => {
       initialized.current = true;
       initChart();
     }
+    
+    // 使用延时器确保侧边栏显示，解决无痕模式下的问题
+    const timer = setTimeout(() => {
+      forceSiderDisplay();
+    }, 500);
+    
+    // 监听页面可见性变化，确保从其他页面返回时侧边栏仍然显示
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        forceSiderDisplay();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearTimeout(timer);
+    };
+    
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

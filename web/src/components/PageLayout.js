@@ -126,6 +126,7 @@ const PageLayout = () => {
               border: 'none',
               paddingRight: '0',
               height: 'calc(100vh - 56px)',
+              transition: 'width 0.3s ease, transform 0.3s ease',
             }}
           >
             <SiderBar />

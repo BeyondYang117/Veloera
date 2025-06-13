@@ -144,6 +144,10 @@ const routing = [
     element: <Docs />,
   },
   {
+    path: '/setup',
+    element: <Setup />,
+  },
+  {
     path: '/login',
     element: <Auth />,
   },

@@ -8,7 +8,7 @@ export const StyleContext = createContext();
 
 // 初始状态
 const initialState = {
-  // 是否显示侧边栏
+  // 是否显示侧边栏 - 默认显示，不依赖localStorage
   showSider: true,
   // 侧边栏是否折叠
   siderCollapsed: localStorage.getItem('default_collapse_sidebar') === 'true',
@@ -23,15 +23,29 @@ const styleReducer = (state, action) => {
   switch (action.type) {
     // 设置侧边栏显示状态
     case 'SET_SIDER':
+      try {
+        // 如果设置为显示，保存到localStorage
+        if (action.payload === true) {
+          localStorage.setItem('forceShowSider', 'true');
+        } else if (action.payload === false) {
+          localStorage.removeItem('forceShowSider');
+        }
+      } catch (e) {
+        console.log('localStorage error:', e);
+      }
       return { ...state, showSider: action.payload };
     // 设置侧边栏折叠状态
     case 'SET_SIDER_COLLAPSED':
-      localStorage.setItem('default_collapse_sidebar', action.payload);
+      try {
+        localStorage.setItem('default_collapse_sidebar', action.payload);
+      } catch (e) {
+        console.log('localStorage error:', e);
+      }
       return { ...state, siderCollapsed: action.payload };
-    // 设置移动设备状态
-    case 'SET_MOBILE':
+    // 设置是否为移动设备
+    case 'SET_IS_MOBILE':
       return { ...state, isMobile: action.payload };
-    // 设置内边距状态
+    // 设置是否应该内边距
     case 'SET_INNER_PADDING':
       return { ...state, shouldInnerPadding: action.payload };
     default:
@@ -39,50 +53,63 @@ const styleReducer = (state, action) => {
   }
 };
 
-// 样式提供者组件
+// 样式上下文提供者
 export const StyleProvider = ({ children }) => {
   const [state, dispatch] = useReducer(styleReducer, initialState);
   const location = useLocation();
-  const { pathname } = location;
 
-  // 处理窗口大小变化
+  // 需要隐藏侧边栏的路径
+  const hideSiderPaths = ['/login', '/register', '/404', '/chat', '/home', '/playground'];
+  
+  // 需要强制显示侧边栏的路径
+  const forceSiderPaths = ['/detail', '/user', '/channel', '/token', '/redemption', '/topup', '/log', '/midjourney', '/task', '/setting'];
+
   useEffect(() => {
+    // 监听窗口大小变化
     const handleResize = () => {
-      const isMobile = window.innerWidth <= 768;
-      dispatch({ type: 'SET_MOBILE', payload: isMobile });
-      
-      // 如果是移动设备，自动折叠侧边栏
-      if (isMobile && state.showSider) {
-        dispatch({ type: 'SET_SIDER_COLLAPSED', payload: true });
-      }
+      dispatch({ type: 'SET_IS_MOBILE', payload: window.innerWidth <= 768 });
     };
-
     window.addEventListener('resize', handleResize);
-    handleResize();
 
-    return () => window.removeEventListener('resize', handleResize);
-  }, [state.showSider]);
-
-  // 根据路由路径决定是否显示侧边栏
-  useEffect(() => {
-    // 不需要显示侧边栏的路径
-    const noSiderPaths = ['/', '/login', '/register', '/reset', '/oauth', '/setup', '/contact', '/docs'];
-
-    // 检查当前路径是否在noSiderPaths中
-    const shouldHideSider = noSiderPaths.some(path => pathname.startsWith(path));
-
-    if (shouldHideSider) {
+    // 根据当前路径决定是否显示侧边栏
+    const currentPath = location.pathname;
+    
+    // 如果当前路径需要隐藏侧边栏，则强制隐藏
+    if (hideSiderPaths.some(path => currentPath.startsWith(path))) {
       dispatch({ type: 'SET_SIDER', payload: false });
+      dispatch({ type: 'SET_INNER_PADDING', payload: false });
+      try {
+        localStorage.removeItem('forceShowSider');
+      } catch (e) {
+        console.log('localStorage error:', e);
+      }
+    } 
+    // 如果当前路径需要强制显示侧边栏，则强制显示
+    else if (forceSiderPaths.some(path => currentPath.startsWith(path))) {
+      dispatch({ type: 'SET_SIDER', payload: true });
+      dispatch({ type: 'SET_INNER_PADDING', payload: true });
+      try {
+        localStorage.setItem('forceShowSider', 'true');
+      } catch (e) {
+        console.log('localStorage error:', e);
+      }
     }
-    // 对于非特殊路径，不在这里强制设置侧边栏状态
-    // 让用户的操作（如控制台按钮点击）来控制侧边栏显示
+    // 其他情况，根据localStorage决定
+    else {
+      try {
+        const forceShowSider = localStorage.getItem('forceShowSider') === 'true';
+        if (forceShowSider) {
+          dispatch({ type: 'SET_SIDER', payload: true });
+        }
+      } catch (e) {
+        console.log('localStorage error:', e);
+      }
+    }
 
-    // 设置内边距状态
-    const noPaddingPaths = ['/chat'];
-    const shouldHavePadding = !noPaddingPaths.some(path => pathname.startsWith(path));
-    dispatch({ type: 'SET_INNER_PADDING', payload: shouldHavePadding });
-
-  }, [pathname, state.isMobile]);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [location.pathname]);
 
   return (
     <StyleContext.Provider value={[state, dispatch]}>
@@ -93,9 +120,5 @@ export const StyleProvider = ({ children }) => {
 
 // 自定义hook，用于获取样式上下文
 export const useStyle = () => {
-  const context = useContext(StyleContext);
-  if (!context) {
-    throw new Error('useStyle must be used within a StyleProvider');
-  }
-  return context;
+  return useContext(StyleContext);
 };

@@ -1,0 +1,6 @@
+/* 隐藏Switch组件在暗色模式下的选中状态图标 */
+body[theme-mode='dark'] .semi-switch-checked::before,
+.semi-switch-checked::before {
+  content: '' !important;
+  display: none !important;
+}

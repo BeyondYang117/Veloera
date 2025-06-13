@@ -413,6 +413,13 @@ const SiderBar = () => {
               to={routerMapState[props.itemKey] || routerMap[props.itemKey]}
               onClick={(e) => {
                 e.preventDefault();
+                // 确保侧边栏保持显示状态
+                styleDispatch({ type: 'SET_SIDER', payload: true });
+                try {
+                  localStorage.setItem('forceShowSider', 'true');
+                } catch (e) {
+                  console.log('localStorage error:', e);
+                }
                 startTransition(() => {
                   navigate(routerMapState[props.itemKey] || routerMap[props.itemKey]);
                 });

@@ -261,7 +261,6 @@ const HeaderBar = () => {
                     </a>
                   ) : (
                     <Link
-                      className='header-bar-text'
                       style={{ textDecoration: 'none' }}
                       to={routerMap[props.itemKey]}
                       onClick={(e) => {
@@ -275,12 +274,28 @@ const HeaderBar = () => {
                               type: 'SET_INNER_PADDING',
                               payload: true,
                             });
+                            // 强制显示侧边栏，并确保在页面加载完成后仍然显示
                             styleDispatch({ type: 'SET_SIDER', payload: true });
+                            try {
+                              localStorage.setItem('forceShowSider', 'true');
+                            } catch (e) {
+                              console.log('localStorage error:', e);
+                            }
                             startTransition(() => {
                               navigate(routerMap[props.itemKey]);
                             });
                           } else {
-                            // 未登录状态：直接跳转到登录页面
+                            // 未登录状态：直接跳转到登录页面，并确保全屏显示
+                            styleDispatch({
+                              type: 'SET_INNER_PADDING',
+                              payload: false,
+                            });
+                            styleDispatch({ type: 'SET_SIDER', payload: false });
+                            try {
+                              localStorage.removeItem('forceShowSider');
+                            } catch (e) {
+                              console.log('localStorage error:', e);
+                            }
                             startTransition(() => {
                               navigate('/login');
                             });
@@ -295,6 +310,11 @@ const HeaderBar = () => {
                             payload: false,
                           });
                           styleDispatch({ type: 'SET_SIDER', payload: false });
+                          try {
+                            localStorage.removeItem('forceShowSider');
+                          } catch (e) {
+                            console.log('localStorage error:', e);
+                          }
                         }
                         // 其他页面保持现有逻辑
                         else {
@@ -304,6 +324,11 @@ const HeaderBar = () => {
                           });
                           if (!styleState.isMobile) {
                             styleDispatch({ type: 'SET_SIDER', payload: true });
+                            try {
+                              localStorage.setItem('forceShowSider', 'true');
+                            } catch (e) {
+                              console.log('localStorage error:', e);
+                            }
                           }
                         }
 
