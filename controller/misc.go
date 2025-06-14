@@ -75,6 +75,8 @@ func GetStatus(c *gin.Context) {
 			"oidc_authorization_endpoint": system_setting.GetOIDCSettings().AuthorizationEndpoint,
 			"setup":                       constant.Setup,
 			"check_in_enabled":            common.CheckInEnabled,
+			"creative_chat_enabled":       common.OptionMap["CreativeChatEnabled"] == "true",
+			"creative_chat_url":           common.OptionMap["CreativeChatUrl"],
 		},
 	})
 	return

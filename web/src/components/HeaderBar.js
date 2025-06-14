@@ -127,6 +127,10 @@ const HeaderBar = () => {
   const isSelfUseMode = statusState?.status?.self_use_mode_enabled || false;
   const docsLink = statusState?.status?.docs_link || '';
   const isDemoSiteMode = statusState?.status?.demo_site_enabled || false;
+  
+  // Check creative chat settings
+  const creativeChatEnabled = statusState?.status?.creative_chat_enabled !== false;
+  const creativeChatUrl = statusState?.status?.creative_chat_url || 'https://chat.abu117.cn/chat';
 
   let buttons = [
     {
@@ -141,6 +145,21 @@ const HeaderBar = () => {
       to: '/detail',
       icon: <IconTerminal style={headerIconStyle} />,
     },
+  ];
+
+  // Add creative chat button if enabled
+  if (creativeChatEnabled) {
+    buttons.push({
+      text: t('创意聊天'),
+      itemKey: 'creative-chat',
+      isExternal: true,
+      externalLink: creativeChatUrl,
+      icon: <IconComment style={headerIconStyle} />,
+    });
+  }
+
+  // Add remaining buttons
+  buttons.push(
     {
       text: t('定价'),
       itemKey: 'pricing',
@@ -158,8 +177,8 @@ const HeaderBar = () => {
       itemKey: 'contact',
       to: '/contact',
       icon: <IconComment style={headerIconStyle} />,
-    },
-  ];
+    }
+  );
 
   async function logout() {
     await API.get('/api/user/logout');

@@ -33,6 +33,10 @@ export function setStatusData(data) {
   } else {
     localStorage.removeItem('docs_link');
   }
+  
+  // Creative chat settings
+  localStorage.setItem('creative_chat_enabled', data.creative_chat_enabled);
+  localStorage.setItem('creative_chat_url', data.creative_chat_url || 'https://chat.abu117.cn/chat');
 }
 
 export function setUserData(data) {

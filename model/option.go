@@ -135,6 +135,10 @@ func InitOptionMap() {
 	// 添加AI小助手设置
 	common.OptionMap["AssistantSettings"] = setting.AssistantSettings2JSONString()
 
+	// 添加创意聊天设置
+	common.OptionMap["CreativeChatEnabled"] = "true"
+	common.OptionMap["CreativeChatUrl"] = "https://chat.abu117.cn/chat"
+
 	// 自动添加所有注册的模型配置
 	modelConfigs := config.GlobalConfig.ExportAllConfigs()
 	for k, v := range modelConfigs {

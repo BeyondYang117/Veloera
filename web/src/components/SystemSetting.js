@@ -72,6 +72,9 @@ const SystemSetting = () => {
     LinuxDOOAuthEnabled: '',
     LinuxDOClientId: '',
     LinuxDOClientSecret: '',
+    // Creative Chat settings
+    CreativeChatEnabled: '',
+    CreativeChatUrl: '',
   });
 
   const [originInputs, setOriginInputs] = useState({});
@@ -111,6 +114,7 @@ const SystemSetting = () => {
           case 'SMTPSSLEnabled':
           case 'LinuxDOOAuthEnabled':
           case 'oidc.enabled':
+          case 'CreativeChatEnabled':
             item.value = item.value === 'true';
             break;
           case 'Price':
@@ -514,6 +518,18 @@ const SystemSetting = () => {
     setShowPasswordLoginConfirmModal(false);
   };
 
+  const submitCreativeChat = async () => {
+    const options = [];
+    
+    if (originInputs['CreativeChatUrl'] !== inputs.CreativeChatUrl) {
+      options.push({ key: 'CreativeChatUrl', value: inputs.CreativeChatUrl });
+    }
+    
+    if (options.length > 0) {
+      await updateOptions(options);
+    }
+  };
+
   return (
     <div>
       {isLoaded ? (
@@ -743,6 +759,15 @@ const SystemSetting = () => {
                         }
                       >
                         允许通过 OIDC 进行登录
+                      </Form.Checkbox>
+                      <Form.Checkbox
+                        field='CreativeChatEnabled'
+                        noLabel
+                        onChange={(e) =>
+                          handleCheckboxChange('CreativeChatEnabled', e)
+                        }
+                      >
+                        启用创意聊天按钮
                       </Form.Checkbox>
                     </Col>
                   </Row>
@@ -1089,6 +1114,26 @@ const SystemSetting = () => {
                     </Col>
                   </Row>
                   <Button onClick={submitTurnstile}>保存 Turnstile 设置</Button>
+                </Form.Section>
+              </Card>
+
+              <Card>
+                <Form.Section text='创意聊天设置'>
+                  <Text>配置顶部导航栏的创意聊天按钮</Text>
+                  <Row
+                    gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
+                  >
+                    <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                      <Form.Input
+                        field='CreativeChatUrl'
+                        label='创意聊天链接地址'
+                        placeholder='例如：https://chat.abu117.cn/chat'
+                      />
+                    </Col>
+                  </Row>
+                  <Button onClick={submitCreativeChat}>
+                    保存创意聊天设置
+                  </Button>
                 </Form.Section>
               </Card>
 
