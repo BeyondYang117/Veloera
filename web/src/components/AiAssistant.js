@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getSystemName, showSuccess, API } from '../helpers';
 import { useTheme } from '../context/Theme';
+import ReactMarkdown from 'react-markdown';
+import './AiAssistant.css';
 
 const AiAssistant = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +15,31 @@ const AiAssistant = () => {
   const messagesEndRef = useRef(null);
   const theme = useTheme();
   const isDarkMode = theme === 'dark';
+
+  // 窗口大小和位置状态
+  const [windowSize, setWindowSize] = useState(() => {
+    const saved = localStorage.getItem('ai-assistant-window-size');
+    return saved ? JSON.parse(saved) : { width: 450, height: 650 };
+  });
+  const [windowPosition, setWindowPosition] = useState(() => {
+    const saved = localStorage.getItem('ai-assistant-window-position');
+    return saved ? JSON.parse(saved) : { right: 30, bottom: 100 };
+  });
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeDirection, setResizeDirection] = useState('');
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+
+  const windowRef = useRef(null);
+
+  // 最小和最大窗口尺寸
+  const MIN_WIDTH = 320;
+  const MIN_HEIGHT = 400;
+  const MAX_WIDTH = window.innerWidth - 60;
+  const MAX_HEIGHT = window.innerHeight - 60;
   
   // 根据主题定义样式变量 - 增强对比度
   const themeStyles = {
@@ -64,12 +91,104 @@ const AiAssistant = () => {
     textShadow: isDarkMode ? '0 1px 3px rgba(0, 0, 0, 0.5)' : 'none',
   };
   
+  // 保存窗口设置到本地存储
+  const saveWindowSettings = useCallback(() => {
+    localStorage.setItem('ai-assistant-window-size', JSON.stringify(windowSize));
+    localStorage.setItem('ai-assistant-window-position', JSON.stringify(windowPosition));
+  }, [windowSize, windowPosition]);
+
+  // 窗口控制功能
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
+  const toggleMinimize = () => {
+    setIsMinimized(!isMinimized);
+  };
+
+  const closeWindow = () => {
+    setIsOpen(false);
+    setIsMinimized(false);
+  };
+
+  // 鼠标事件处理
+  const handleMouseDown = useCallback((e, action, direction = '') => {
+    e.preventDefault();
+    if (action === 'drag') {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX, y: e.clientY });
+    } else if (action === 'resize') {
+      setIsResizing(true);
+      setResizeDirection(direction);
+      setResizeStart({
+        x: e.clientX,
+        y: e.clientY,
+        width: windowSize.width,
+        height: windowSize.height
+      });
+    }
+  }, [windowSize]);
+
+  const handleMouseMove = useCallback((e) => {
+    if (isDragging && !isFullscreen) {
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
+      setWindowPosition(prev => ({
+        right: Math.max(10, Math.min(window.innerWidth - windowSize.width - 10, prev.right - deltaX)),
+        bottom: Math.max(10, Math.min(window.innerHeight - windowSize.height - 10, prev.bottom - deltaY))
+      }));
+      setDragStart({ x: e.clientX, y: e.clientY });
+    } else if (isResizing && !isFullscreen) {
+      const deltaX = e.clientX - resizeStart.x;
+      const deltaY = e.clientY - resizeStart.y;
+
+      let newWidth = resizeStart.width;
+      let newHeight = resizeStart.height;
+
+      if (resizeDirection.includes('right')) {
+        newWidth = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, resizeStart.width + deltaX));
+      }
+      if (resizeDirection.includes('left')) {
+        newWidth = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, resizeStart.width - deltaX));
+      }
+      if (resizeDirection.includes('bottom')) {
+        newHeight = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, resizeStart.height + deltaY));
+      }
+      if (resizeDirection.includes('top')) {
+        newHeight = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, resizeStart.height - deltaY));
+      }
+
+      setWindowSize({ width: newWidth, height: newHeight });
+    }
+  }, [isDragging, isResizing, dragStart, resizeStart, resizeDirection, windowSize, isFullscreen]);
+
+  const handleMouseUp = useCallback(() => {
+    if (isDragging || isResizing) {
+      setIsDragging(false);
+      setIsResizing(false);
+      setResizeDirection('');
+      saveWindowSettings();
+    }
+  }, [isDragging, isResizing, saveWindowSettings]);
+
+  // 添加全局鼠标事件监听
+  useEffect(() => {
+    if (isDragging || isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, isResizing, handleMouseMove, handleMouseUp]);
+
   // 检查是否需要显示缓存警告
   useEffect(() => {
     if (systemName === 'BigAiPro') {
       setShowBadge(true);
     }
-    
+
     // 初始化欢迎消息
     if (messages.length === 0) {
       setMessages([
@@ -86,7 +205,11 @@ const AiAssistant = () => {
   }, [messages]);
 
   const toggleChat = () => {
-    setIsOpen(!isOpen);
+    if (isMinimized) {
+      setIsMinimized(false);
+    } else {
+      setIsOpen(!isOpen);
+    }
   };
   
   // 清理缓存并刷新页面
@@ -113,14 +236,14 @@ const AiAssistant = () => {
   // 发送消息到大模型
   const handleSendMessage = async () => {
     if (!input.trim() || loading) return;
-    
+
     // 添加用户消息到聊天历史
     const userMessage = { role: 'user', content: input.trim() };
     setMessages(prevMessages => [...prevMessages, userMessage]);
     setInput('');
     setLoading(true);
     setError(null);
-    
+
     try {
       // 准备请求数据
       const requestData = {
@@ -132,10 +255,10 @@ const AiAssistant = () => {
         temperature: 0.7,
         max_tokens: 1000
       };
-      
-      // 发送请求到API
-      const response = await API.post('/v1/chat/completions', requestData);
-      
+
+      // 发送请求到AI助手专用API（无需登录，后端会自动处理token）
+      const response = await API.post('/api/chat/assistant', requestData);
+
       // 处理响应
       if (response.data && response.data.choices && response.data.choices.length > 0) {
         const assistantMessage = {
@@ -148,7 +271,12 @@ const AiAssistant = () => {
       }
     } catch (err) {
       console.error('调用AI模型出错:', err);
-      setError(err.response?.data?.error?.message || err.message || '调用AI模型出错，请稍后再试');
+      // 处理特殊错误情况
+      if (err.response?.status === 500 && err.response?.data?.message?.includes('未配置系统令牌')) {
+        setError('AI助手服务暂时不可用，请联系管理员配置系统令牌');
+      } else {
+        setError(err.response?.data?.error?.message || err.response?.data?.message || err.message || '调用AI模型出错，请稍后再试');
+      }
     } finally {
       setLoading(false);
     }
@@ -170,49 +298,78 @@ const AiAssistant = () => {
   return (
     <>
       {/* AI助手按钮 */}
-      <div 
-        onClick={toggleChat}
-        style={{
-          position: 'fixed',
-          bottom: '30px',
-          right: '30px',
-          zIndex: 999,
-          cursor: 'pointer',
-          width: '60px',
-          height: '60px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
+      {!isOpen && (
         <div
-          style={{ 
-            width: '48px', 
-            height: '48px', 
-            borderRadius: '50%',
-            background: themeStyles.assistantButtonBg,
+          onClick={toggleChat}
+          style={{
+            position: 'fixed',
+            bottom: '30px',
+            right: '30px',
+            zIndex: 999,
+            cursor: 'pointer',
+            width: '60px',
+            height: '60px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            boxShadow: themeStyles.assistantButtonShadow
+            justifyContent: 'center'
           }}
         >
-          {showBadge && (
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              width: '10px',
-              height: '10px',
-              background: 'red',
-              borderRadius: '50%'
-            }}></div>
-          )}
-          AI
+          <div
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              background: themeStyles.assistantButtonBg,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontWeight: 'bold',
+              boxShadow: themeStyles.assistantButtonShadow
+            }}
+          >
+            {showBadge && (
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '10px',
+                height: '10px',
+                background: 'red',
+                borderRadius: '50%'
+              }}></div>
+            )}
+            AI
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* 最小化状态的任务栏 */}
+      {isOpen && isMinimized && (
+        <div
+          onClick={toggleChat}
+          style={{
+            position: 'fixed',
+            bottom: '30px',
+            right: '30px',
+            zIndex: 999,
+            cursor: 'pointer',
+            padding: '8px 16px',
+            background: themeStyles.headerBg,
+            color: 'white',
+            borderRadius: '20px',
+            boxShadow: themeStyles.assistantButtonShadow,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            fontWeight: 'bold',
+          }}
+        >
+          <span>AI</span>
+          <span>{systemName} 助手</span>
+        </div>
+      )}
       
       {/* 系统名称异常时显示重置按钮 */}
       {systemName === 'BigAiPro' && (
@@ -236,61 +393,156 @@ const AiAssistant = () => {
       )}
       
       {/* 聊天窗口 */}
-      {isOpen && (
-        <div style={{
-          position: 'fixed',
-          bottom: '100px',
-          right: '30px',
-          width: '350px',
-          height: '500px',
-          background: themeStyles.chatWindowBg,
-          borderRadius: '16px',
-          boxShadow: themeStyles.chatWindowShadow,
-          border: themeStyles.chatWindowBorder,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          zIndex: 1000,
-        }}>
-          {/* 聊天窗口头部 */}
-          <div style={{
-            background: themeStyles.headerBg,
-            padding: '16px',
-            color: themeStyles.headerText,
+      {isOpen && !isMinimized && (
+        <div
+          ref={windowRef}
+          style={{
+            position: 'fixed',
+            right: isFullscreen ? 0 : `${windowPosition.right}px`,
+            bottom: isFullscreen ? 0 : `${windowPosition.bottom}px`,
+            width: isFullscreen ? '100vw' : `${windowSize.width}px`,
+            height: isFullscreen ? '100vh' : `${windowSize.height}px`,
+            background: themeStyles.chatWindowBg,
+            borderRadius: isFullscreen ? '0' : '16px',
+            boxShadow: themeStyles.chatWindowShadow,
+            border: themeStyles.chatWindowBorder,
+            overflow: 'hidden',
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            borderBottom: '1px solid rgba(0, 0, 0, 0.1)'
+            flexDirection: 'column',
+            zIndex: 1000,
+            transition: isFullscreen ? 'all 0.3s ease' : 'none',
           }}>
-            <div style={{ fontWeight: 'bold', color: '#ffffff' }}>{systemName} 助手</div>
-            <div
-              onClick={toggleChat}
-              style={{ cursor: 'pointer', fontSize: '18px', color: '#ffffff' }}
-            >
-              ✕
+
+          {/* 调整大小的手柄 */}
+          {!isFullscreen && (
+            <>
+              {/* 右边缘 */}
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: '20px',
+                  bottom: '20px',
+                  width: '4px',
+                  cursor: 'ew-resize',
+                  zIndex: 1001,
+                }}
+                onMouseDown={(e) => handleMouseDown(e, 'resize', 'right')}
+              />
+              {/* 底边缘 */}
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: '20px',
+                  right: '20px',
+                  height: '4px',
+                  cursor: 'ns-resize',
+                  zIndex: 1001,
+                }}
+                onMouseDown={(e) => handleMouseDown(e, 'resize', 'bottom')}
+              />
+              {/* 右下角 */}
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  bottom: 0,
+                  width: '20px',
+                  height: '20px',
+                  cursor: 'nw-resize',
+                  zIndex: 1001,
+                }}
+                onMouseDown={(e) => handleMouseDown(e, 'resize', 'right bottom')}
+              />
+            </>
+          )}
+
+          {/* 聊天窗口头部 */}
+          <div
+            style={{
+              background: themeStyles.headerBg,
+              padding: '12px 16px',
+              color: themeStyles.headerText,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
+              cursor: isFullscreen ? 'default' : 'move',
+              userSelect: 'none',
+            }}
+            onMouseDown={(e) => !isFullscreen && handleMouseDown(e, 'drag')}
+          >
+            <div style={{ fontWeight: 'bold', color: '#ffffff', fontSize: '16px' }}>
+              {systemName} 助手
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* 最小化按钮 */}
+              <div
+                onClick={toggleMinimize}
+                style={{
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  color: '#ffffff',
+                  padding: '4px',
+                  borderRadius: '4px',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
+                onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                title="最小化"
+              >
+                −
+              </div>
+              {/* 全屏/窗口切换按钮 */}
+              <div
+                onClick={toggleFullscreen}
+                style={{
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  color: '#ffffff',
+                  padding: '4px',
+                  borderRadius: '4px',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
+                onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                title={isFullscreen ? "退出全屏" : "全屏"}
+              >
+                {isFullscreen ? '⧉' : '□'}
+              </div>
+              {/* 关闭按钮 */}
+              <div
+                onClick={closeWindow}
+                style={{
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  color: '#ffffff',
+                  padding: '4px',
+                  borderRadius: '4px',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => e.target.style.background = 'rgba(255,0,0,0.3)'}
+                onMouseLeave={(e) => e.target.style.background = 'transparent'}
+                title="关闭"
+              >
+                ✕
+              </div>
             </div>
           </div>
           
           {/* 聊天内容区域 */}
-          <div style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '16px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px',
-            background: themeStyles.contentBg,
-            '&::-webkit-scrollbar': {
-              width: '6px',
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: themeStyles.scrollbarThumb,
-              borderRadius: '3px',
-            },
-            '&::-webkit-scrollbar-track': {
-              backgroundColor: themeStyles.scrollbarTrack,
-            }
-          }}>
+          <div
+            className={`chat-content-area ${isDarkMode ? 'dark-theme' : 'light-theme'}`}
+            style={{
+              flex: 1,
+              overflowY: 'auto',
+              padding: '16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              background: themeStyles.contentBg,
+            }}>
             {messages.map((msg, index) => (
               <div
                 key={index}
@@ -317,7 +569,55 @@ const AiAssistant = () => {
                     fontWeight: isDarkMode ? 600 : 'normal'
                   }}
                 >
-                  {msg.content}
+                  {msg.role === 'assistant' ? (
+                    <div style={{
+                      color: 'inherit',
+                      fontSize: 'inherit',
+                      lineHeight: 'inherit'
+                    }}>
+                      <ReactMarkdown
+                        components={{
+                          // 自定义组件样式以匹配主题
+                          p: ({children}) => <p style={{margin: '0 0 8px 0', lineHeight: '1.5'}}>{children}</p>,
+                          ul: ({children}) => <ul style={{margin: '8px 0', paddingLeft: '20px'}}>{children}</ul>,
+                          ol: ({children}) => <ol style={{margin: '8px 0', paddingLeft: '20px'}}>{children}</ol>,
+                          li: ({children}) => <li style={{margin: '2px 0'}}>{children}</li>,
+                          code: ({children}) => (
+                            <code style={{
+                              background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                              padding: '2px 4px',
+                              borderRadius: '3px',
+                              fontSize: '0.9em'
+                            }}>{children}</code>
+                          ),
+                          pre: ({children}) => (
+                            <pre style={{
+                              background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                              padding: '8px',
+                              borderRadius: '6px',
+                              overflow: 'auto',
+                              margin: '8px 0'
+                            }}>{children}</pre>
+                          ),
+                          blockquote: ({children}) => (
+                            <blockquote style={{
+                              borderLeft: `3px solid ${isDarkMode ? '#4a4a4a' : '#ddd'}`,
+                              paddingLeft: '12px',
+                              margin: '8px 0',
+                              fontStyle: 'italic'
+                            }}>{children}</blockquote>
+                          ),
+                          h1: ({children}) => <h1 style={{fontSize: '1.2em', margin: '8px 0 4px 0', fontWeight: 'bold'}}>{children}</h1>,
+                          h2: ({children}) => <h2 style={{fontSize: '1.1em', margin: '8px 0 4px 0', fontWeight: 'bold'}}>{children}</h2>,
+                          h3: ({children}) => <h3 style={{fontSize: '1.05em', margin: '8px 0 4px 0', fontWeight: 'bold'}}>{children}</h3>,
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    </div>
+                  ) : (
+                    msg.content
+                  )}
                 </div>
                 <div
                   style={{
@@ -393,6 +693,7 @@ const AiAssistant = () => {
                   <div
                     key={i}
                     onClick={() => handleSelectQuestion(q)}
+                    className="suggestion-button"
                     style={{
                       padding: '6px 12px',
                       borderRadius: '16px',
@@ -404,9 +705,6 @@ const AiAssistant = () => {
                       border: isDarkMode ? '1px solid #4a4a4a' : 'none',
                       textShadow: themeStyles.textShadow,
                       fontWeight: isDarkMode ? 600 : 'normal',
-                      '&:hover': {
-                        background: themeStyles.suggestionHoverBg,
-                      }
                     }}
                   >
                     {q}
@@ -431,6 +729,7 @@ const AiAssistant = () => {
               onChange={handleInputChange}
               onKeyPress={handleKeyPress}
               placeholder="输入问题..."
+              className={`chat-input ${isDarkMode ? 'dark-theme' : 'light-theme'}`}
               style={{
                 flex: 1,
                 padding: '10px 16px',
@@ -440,18 +739,12 @@ const AiAssistant = () => {
                 color: themeStyles.inputText,
                 outline: 'none',
                 fontWeight: isDarkMode ? 600 : 'normal',
-                '&::placeholder': {
-                  color: themeStyles.inputPlaceholder
-                },
-                '&:focus': {
-                  borderColor: '#1890ff',
-                  boxShadow: '0 0 0 2px rgba(24, 144, 255, 0.2)'
-                }
               }}
             />
             <button
               onClick={handleSendMessage}
               disabled={loading || !input.trim()}
+              className="send-button"
               style={{
                 background: themeStyles.sendButtonBg,
                 color: themeStyles.sendButtonText,
@@ -465,9 +758,6 @@ const AiAssistant = () => {
                 cursor: loading || !input.trim() ? 'not-allowed' : 'pointer',
                 opacity: loading || !input.trim() ? 0.6 : 1,
                 transition: 'all 0.3s',
-                '&:hover': {
-                  background: themeStyles.sendButtonHoverBg
-                }
               }}
             >
               →

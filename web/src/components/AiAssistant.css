@@ -1,0 +1,71 @@
+/* AI助手聊天内容区域滚动条样式 */
+.chat-content-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-content-area::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+}
+
+.chat-content-area::-webkit-scrollbar-track {
+  border-radius: 3px;
+}
+
+/* 亮色主题滚动条 */
+.chat-content-area.light-theme::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.chat-content-area.light-theme::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* 暗色主题滚动条 */
+.chat-content-area.dark-theme::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.chat-content-area.dark-theme::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* 滚动条悬停效果 */
+.chat-content-area::-webkit-scrollbar-thumb:hover {
+  opacity: 0.8;
+}
+
+/* 输入框样式 */
+.chat-input::placeholder {
+  opacity: 0.6;
+}
+
+.chat-input.light-theme::placeholder {
+  color: #bfbfbf;
+}
+
+.chat-input.dark-theme::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.chat-input:focus {
+  border-color: #1890ff !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+}
+
+/* 发送按钮悬停效果 */
+.send-button:hover:not(:disabled) {
+  background: #40a9ff !important;
+  transform: scale(1.05);
+}
+
+/* 常见问题按钮悬停效果 */
+.suggestion-button:hover {
+  background: #e6f7ff !important;
+  color: #1890ff !important;
+}
+
+/* 暗色主题下的常见问题按钮悬停效果 */
+.dark-theme .suggestion-button:hover {
+  background: #1366ca !important;
+  color: #ffffff !important;
+}

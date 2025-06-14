@@ -163,12 +163,18 @@ func GenRelayInfo(c *gin.Context) *RelayInfo {
 		originalModel = prefixedModel
 	}
 
+	// 优先从context中获取relay_mode，如果没有则从路径推断
+	relayMode := c.GetInt("relay_mode")
+	if relayMode == 0 {
+		relayMode = relayconstant.Path2RelayMode(c.Request.URL.Path)
+	}
+
 	info := &RelayInfo{
 		UserQuota:         c.GetInt(constant.ContextKeyUserQuota),
 		UserSetting:       c.GetStringMap(constant.ContextKeyUserSetting),
 		UserEmail:         c.GetString(constant.ContextKeyUserEmail),
 		isFirstResponse:   true,
-		RelayMode:         relayconstant.Path2RelayMode(c.Request.URL.Path),
+		RelayMode:         relayMode,
 		BaseUrl:           c.GetString("base_url"),
 		RequestURLPath:    c.Request.URL.String(),
 		ChannelType:       channelType,

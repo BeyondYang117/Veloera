@@ -9,7 +9,7 @@ services:
     restart: always
     # command: --log-dir /app/logs  # 移除错误的命令行参数
     ports:
-      - "3000:3000"  # 修改端口映射
+      - "3003:3000"  # 修改端口映射
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs

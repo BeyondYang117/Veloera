@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 	"time"
@@ -145,7 +146,11 @@ func InitOptionMap() {
 }
 
 func loadOptionsFromDatabase() {
-	options, _ := AllOption()
+	options, err := AllOption()
+	if err != nil {
+		common.SysError("failed to load options from database: " + err.Error())
+		return
+	}
 	for _, option := range options {
 		err := updateOptionMap(option.Key, option.Value)
 		if err != nil {
@@ -203,9 +208,9 @@ func updateOptionMap(key string, value string) (err error) {
 		}
 	}
 	
-	// 处理AI小助手设置
+	// 处理AI小助手设置 - 避免死锁，直接在这里处理
 	if key == "AssistantSettings" {
-		setting.LoadAssistantSettings()
+		loadAssistantSettingsUnsafe(value)
 		return nil
 	}
 	
@@ -447,4 +452,44 @@ func handleConfigUpdate(key, value string) bool {
 	config.UpdateConfigFromMap(cfg, configMap)
 
 	return true // 已处理
+}
+
+// loadAssistantSettingsUnsafe 在已持有锁的情况下加载AI小助手设置，避免死锁
+func loadAssistantSettingsUnsafe(settingsJSON string) {
+	if settingsJSON == "" {
+		return
+	}
+
+	// 首先尝试解析为map，以便灵活处理不同的数据类型
+	var rawSettings map[string]interface{}
+	err := json.Unmarshal([]byte(settingsJSON), &rawSettings)
+	if err != nil {
+		common.SysError("解析AI小助手设置失败: " + err.Error())
+		return
+	}
+
+	// 安全地提取各个字段
+	if apiURL, ok := rawSettings["api_url"].(string); ok {
+		setting.AssistantAPIURL = apiURL
+	}
+
+	if apiKey, ok := rawSettings["api_key"].(string); ok {
+		setting.AssistantAPIKey = apiKey
+	}
+
+	if model, ok := rawSettings["model"].(string); ok {
+		setting.AssistantModel = model
+	}
+
+	// 处理enabled字段，支持多种类型
+	if enabledRaw, ok := rawSettings["enabled"]; ok {
+		switch v := enabledRaw.(type) {
+		case bool:
+			setting.AssistantEnabled = v
+		case string:
+			setting.AssistantEnabled = v == "true"
+		default:
+			setting.AssistantEnabled = false
+		}
+	}
 }

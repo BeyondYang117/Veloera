@@ -1,28 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { API, showError, showSuccess, showWarning } from '../helpers';
-import { Button, Form, Typography, Input, Select, Checkbox, Spin } from '@douyinfe/semi-ui';
+import { API, showError, showSuccess } from '../helpers';
+import { Button, Form, Typography, Spin } from '@douyinfe/semi-ui';
 
 const { Text } = Typography;
 
 // 模拟数据，当 API 不可用时使用
 const mockData = {
-  defaultModel: 'gpt-4o',
-  systemToken: '',
-  enableUserToken: false,
+  apiUrl: 'https://api.openai.com/v1/chat/completions',
+  apiKey: '',
+  model: 'gpt-3.5-turbo',
+  enabled: false,
   modelOptions: [
     { label: 'gpt-4o', value: 'gpt-4o' },
     { label: 'gpt-4', value: 'gpt-4' },
     { label: 'gpt-3.5-turbo', value: 'gpt-3.5-turbo' },
-    { label: 'claude-3-opus', value: 'claude-3-opus' },
-    { label: 'claude-3-sonnet', value: 'claude-3-sonnet' }
+    { label: 'claude-3-opus-20240229', value: 'claude-3-opus-20240229' },
+    { label: 'claude-3-sonnet-20240229', value: 'claude-3-sonnet-20240229' },
+    { label: 'claude-3-haiku-20240307', value: 'claude-3-haiku-20240307' }
   ]
 };
 
 const AssistantSetting = () => {
   const [inputs, setInputs] = useState({
-    defaultModel: mockData.defaultModel,
-    systemToken: mockData.systemToken,
-    enableUserToken: mockData.enableUserToken
+    apiUrl: mockData.apiUrl,
+    apiKey: mockData.apiKey,
+    model: mockData.model,
+    enabled: mockData.enabled
   });
   const [loading, setLoading] = useState(false);
   const [modelOptions, setModelOptions] = useState(mockData.modelOptions);
@@ -32,19 +35,33 @@ const AssistantSetting = () => {
     try {
       const res = await API.get('/api/option');
       const { success, data } = res.data || res;
-      if (success) {
+
+      if (success && data) {
         let assistantSettings = data.find(item => item.key === 'AssistantSettings');
-        if (assistantSettings) {
+
+        if (assistantSettings && assistantSettings.value) {
           try {
             const settings = JSON.parse(assistantSettings.value);
             setInputs({
-              defaultModel: settings.default_model || mockData.defaultModel,
-              systemToken: settings.system_token || mockData.systemToken,
-              enableUserToken: settings.enable_user_token === true
+              apiUrl: settings.api_url || mockData.apiUrl,
+              apiKey: settings.api_key || mockData.apiKey,
+              model: settings.model || mockData.model,
+              enabled: settings.enabled === true
             });
+            setApiAvailable(true);
           } catch (e) {
             console.error('解析AI小助手设置失败', e);
+            setApiAvailable(false);
           }
+        } else {
+          // 如果没有找到设置，使用默认值
+          setInputs({
+            apiUrl: mockData.apiUrl,
+            apiKey: mockData.apiKey,
+            model: mockData.model,
+            enabled: mockData.enabled
+          });
+          setApiAvailable(true);
         }
       } else {
         console.warn('获取设置失败，使用模拟数据');
@@ -89,18 +106,19 @@ const AssistantSetting = () => {
         }, 500);
         return;
       }
-      
+
       const settings = {
-        default_model: inputs.defaultModel,
-        system_token: inputs.systemToken,
-        enable_user_token: inputs.enableUserToken
+        api_url: inputs.apiUrl,
+        api_key: inputs.apiKey,
+        model: inputs.model,
+        enabled: inputs.enabled
       };
-      
-      const res = await API.put('/api/option', {
+
+      const res = await API.put('/api/option/', {
         key: 'AssistantSettings',
         value: JSON.stringify(settings)
       });
-      
+
       if (res.data?.success || res.success) {
         showSuccess('保存成功！');
       } else {
@@ -110,7 +128,7 @@ const AssistantSetting = () => {
       if (!apiAvailable) {
         showSuccess('模拟保存成功！(API不可用)');
       } else {
-        showError('保存失败');
+        showError('保存失败: ' + (error.response?.data?.message || error.message));
       }
     } finally {
       setLoading(false);
@@ -124,10 +142,11 @@ const AssistantSetting = () => {
     });
   };
 
-  const handleCheckboxChange = (checked) => {
+  const handleCheckboxChange = (e) => {
+    const checked = e.target ? e.target.checked : e;
     setInputs({
       ...inputs,
-      enableUserToken: checked
+      enabled: checked
     });
   };
 
@@ -140,33 +159,43 @@ const AssistantSetting = () => {
         </div>
       )}
       <Text style={{ marginBottom: '16px', display: 'block' }}>
-        AI小助手设置用于配置系统默认的AI模型和系统令牌。系统默认使用系统令牌，如果启用"启用用户令牌"选项，已登录用户将使用其自己的令牌。
+        AI小助手设置用于配置系统的AI服务。管理员配置后，所有用户都可以使用AI助手功能。
       </Text>
       {loading ? (
         <Spin />
       ) : (
         <Form>
-          <Form.Select
-            field="defaultModel"
-            label="默认模型"
+          <Form.Input
+            field="apiUrl"
+            label="API地址"
+            placeholder="例如：https://api.openai.com/v1/chat/completions"
+            value={inputs.apiUrl}
+            onChange={(value) => handleInputChange(value, 'apiUrl')}
             style={{ width: '100%' }}
-            optionList={modelOptions}
-            value={inputs.defaultModel}
-            onChange={(value) => handleInputChange(value, 'defaultModel')}
           />
           <Form.Input
-            field="systemToken"
-            label="系统令牌"
-            placeholder="输入系统令牌（sk-xxx）"
-            value={inputs.systemToken}
-            onChange={(value) => handleInputChange(value, 'systemToken')}
+            field="apiKey"
+            label="API密钥"
+            placeholder="输入API密钥（sk-xxx）"
+            value={inputs.apiKey}
+            onChange={(value) => handleInputChange(value, 'apiKey')}
+            type="password"
+            style={{ width: '100%' }}
+          />
+          <Form.Select
+            field="model"
+            label="模型"
+            style={{ width: '100%' }}
+            optionList={modelOptions}
+            value={inputs.model}
+            onChange={(value) => handleInputChange(value, 'model')}
           />
           <Form.Checkbox
-            field="enableUserToken"
-            checked={inputs.enableUserToken}
+            field="enabled"
+            checked={inputs.enabled}
             onChange={(checked) => handleCheckboxChange(checked)}
           >
-            启用用户令牌（如果用户已登录）
+            启用AI小助手功能
           </Form.Checkbox>
           <Button type="primary" onClick={updateOption} style={{ marginTop: '16px' }}>保存</Button>
         </Form>
